@@ -27,10 +27,24 @@ export function getDirectEmbedUrl(rawUrl) {
     return url.includes('?') ? `${url}&embedded=true` : `${url}?embedded=true`;
   }
 
-  // 4. Canva Design
+  // 4. Google Drive File / PDF (contoh: https://drive.google.com/file/d/ID/view -> /preview)
+  const gdriveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+  if (gdriveMatch) {
+    return `https://drive.google.com/file/d/${gdriveMatch[1]}/preview`;
+  }
+
+  // 5. Google Docs / Slides / Spreadsheets (/edit atau /view -> /preview)
+  const gdocsMatch = url.match(
+    /docs\.google\.com\/(document|presentation|spreadsheets)\/d\/([^/]+)/i
+  );
+  if (gdocsMatch) {
+    return `https://docs.google.com/${gdocsMatch[1]}/d/${gdocsMatch[2]}/preview`;
+  }
+
+  // 6. Canva Design
   if (url.includes('canva.com/design/') && !url.includes('?embed')) {
-    const baseCanva = url.split('?')[0].replace(/\/edit$/, '/view');
-    return `${baseCanva}?embed`;
+    const baseCanva = url.split('?')[0].replace(/\/(edit|view)$/, '/view');
+    return `${baseCanva.endsWith('/view') ? baseCanva : `${baseCanva}/view`}?embed`;
   }
 
   return url;

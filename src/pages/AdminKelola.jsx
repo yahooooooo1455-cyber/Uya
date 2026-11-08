@@ -23,7 +23,7 @@ import {
   convertYouTubeToEmbed,
   getYouTubeThumbnail
 } from '../lib/dataService';
-import { getAutoWebPreviewUrl } from '../components/ExternalLinkCardWithQR';
+import { getAutoWebPreviewUrl, getDirectEmbedUrl } from '../components/ExternalLinkCardWithQR';
 import { DEFAULT_SITE_CONTENTS } from '../data/defaultData';
 
 export default function AdminKelola() {
@@ -37,8 +37,11 @@ export default function AdminKelola() {
   // 2. State Tujuan Pembelajaran (Upload Foto)
   const [tujuanData, setTujuanData] = useState(DEFAULT_SITE_CONTENTS.tujuan);
 
-  // 3. State Bahan Bacaan (Upload Foto Slide Canva + Toggle Simulasi)
+  // 3. State Bahan Bacaan (Link seperti No 4)
   const [bahanData, setBahanData] = useState(DEFAULT_SITE_CONTENTS.bahan_bacaan);
+  const [bahanTitle, setBahanTitle] = useState('');
+  const [bahanSubtitle, setBahanSubtitle] = useState('');
+  const [bahanUrl, setBahanUrl] = useState('');
 
   // 4. State Video Pembelajaran (Link YouTube)
   const [videos, setVideos] = useState([]);
@@ -100,7 +103,12 @@ export default function AdminKelola() {
             : DEFAULT_SITE_CONTENTS.tujuan.images
       });
     }
-    if (b) setBahanData(b);
+    if (b) {
+      setBahanData({
+        ...b,
+        links: Array.isArray(b.links) ? b.links : DEFAULT_SITE_CONTENTS.bahan_bacaan.links
+      });
+    }
     if (pus) {
       setPustakaData({
         ...pus,
@@ -204,50 +212,36 @@ export default function AdminKelola() {
     showToast('✓ Gambar Tujuan Pembelajaran dihapus.');
   };
 
-  // 3. Upload Foto Bahan Bacaan (Canva Slide)
-  const handleUploadBahanSlide = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      setUploading(true);
-      const res = await uploadImageToCloudinary(file);
-      const nextSlides = [
-        ...(bahanData.slides || []),
-        {
-          id: Date.now(),
-          url: res.url,
-          alt: file.name
-        }
-      ];
-      const updated = { ...bahanData, slides: nextSlides };
-      setBahanData(updated);
-      await saveSiteContent('bahan_bacaan', updated);
-      showToast('✓ Foto Slide Bahan Bacaan berhasil diunggah!');
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setUploading(false);
-      e.target.value = '';
+  // 3. Tambah & Hapus Link Bahan Bacaan (Sama seperti No 4 Video Pembelajaran)
+  const handleAddBahanLink = async (e) => {
+    e.preventDefault();
+    if (!bahanTitle.trim() || !bahanUrl.trim()) return;
+    let formattedUrl = bahanUrl.trim();
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      formattedUrl = 'https://' + formattedUrl;
     }
-  };
-
-  const handleDeleteBahanSlide = async (id) => {
-    const nextSlides = (bahanData.slides || []).filter((s) => s.id !== id);
-    const updated = { ...bahanData, slides: nextSlides };
+    const newLink = {
+      id: Date.now(),
+      title: bahanTitle.trim(),
+      subtitle: bahanSubtitle.trim(),
+      url: formattedUrl
+    };
+    const nextLinks = [...(bahanData.links || []), newLink];
+    const updated = { ...bahanData, links: nextLinks };
     setBahanData(updated);
     await saveSiteContent('bahan_bacaan', updated);
-    showToast('✓ Slide Bahan Bacaan dihapus.');
+    setBahanTitle('');
+    setBahanSubtitle('');
+    setBahanUrl('');
+    showToast('✓ Link Bahan Bacaan berhasil disimpan!');
   };
 
-  const handleToggleSimulator = async (checked) => {
-    const updated = { ...bahanData, show_simulator: checked };
+  const handleDeleteBahanLink = async (id) => {
+    const nextLinks = (bahanData.links || []).filter((item) => item.id !== id);
+    const updated = { ...bahanData, links: nextLinks };
     setBahanData(updated);
     await saveSiteContent('bahan_bacaan', updated);
-    showToast(
-      checked
-        ? '✓ Simulasi Kalkulator Bangun Datar diaktifkan!'
-        : '✓ Simulasi Kalkulator Bangun Datar disembunyikan.'
-    );
+    showToast('✓ Link Bahan Bacaan dihapus.');
   };
 
   // 4. Tambah Video Pembelajaran (Link Tanpa Sampul)
@@ -407,7 +401,7 @@ export default function AdminKelola() {
             className={`admin-tab-btn ${activeTab === 'bahan' ? 'active' : ''}`}
             onClick={() => setActiveTab('bahan')}
           >
-            3. 📚 Bahan Bacaan (Upload Foto &amp; Simulasi)
+            3. 📚 Bahan Bacaan (Link)
           </button>
           <button
             className={`admin-tab-btn ${activeTab === 'video' ? 'active' : ''}`}
@@ -555,85 +549,125 @@ export default function AdminKelola() {
           </section>
         )}
 
-        {/* ==================== 3. TAB BAHAN BACAAN (UPLOAD FOTO CANVA & SIMULASI) ==================== */}
+        {/* ==================== 3. TAB BAHAN BACAAN (LINK TANPA SAMPUL SEPERTI NO 4) ==================== */}
         {activeTab === 'bahan' && (
           <section className="interactive-panel" style={{ marginTop: 0 }}>
-            <h2 className="panel-title">📚 Kelola Foto Bahan Bacaan &amp; Simulasi</h2>
+            <h2 className="panel-title">📚 Kelola Link Bahan Bacaan</h2>
             <p className="panel-subtitle">
-              Karena desain kotak-kotak bangun datar pada Bahan Bacaan dibuat di Canva, Guru bisa
-              mengunggah gambar slide Canva di sini, serta mengatur fitur Simulasi Kalkulator Rumus.
+              Cukup tempelkan link Bahan Bacaan seperti Canva, Flipbook, Google Drive, Buku Digital,
+              atau YouTube (tanpa perlu upload foto sampul). Tampilan materi akan langsung muncul
+              otomatis di halaman{' '}
+              <Link to="/bahan-bacaan" style={{ color: 'var(--primary)', fontWeight: 800 }}>
+                Bahan Bacaan Siswa ↗
+              </Link>
+              .
             </p>
 
-            <div className="add-link-card" style={{ marginBottom: '24px' }}>
-              <div className="form-group">
-                <label>➕ Upload Gambar Slide Bahan Bacaan Baru (PNG / JPG dari Canva)</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleUploadBahanSlide}
-                  disabled={uploading}
-                />
-                {uploading && (
-                  <span className="upload-badge">⏳ Sedang mengunggah gambar...</span>
-                )}
+            <form
+              onSubmit={handleAddBahanLink}
+              className="add-link-card"
+              style={{ marginBottom: '24px' }}
+            >
+              <div className="form-grid-2">
+                <div className="form-group">
+                  <label>Judul Bahan Bacaan *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Bahan Bacaan Bab 1 — Bilangan Cacah s.d. 100"
+                    value={bahanTitle}
+                    onChange={(e) => setBahanTitle(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Keterangan / Topik Materi *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Menghitung Kerajinan Purun Kita"
+                    value={bahanSubtitle}
+                    onChange={(e) => setBahanSubtitle(e.target.value)}
+                  />
+                </div>
               </div>
 
-              <div
-                style={{
-                  marginTop: '14px',
-                  paddingTop: '14px',
-                  borderTop: '1px solid #eee',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '10px'
-                }}
-              >
-                <div>
-                  <strong>🧮 Fitur Simulasi Kalkulator Rumus Bangun Datar</strong>
-                  <div style={{ fontSize: '0.86rem', color: '#666' }}>
-                    Memudahkan siswa mencoba menghitung luas &amp; keliling langsung di bawah Bahan
-                    Bacaan.
+              <div className="form-group">
+                <label>
+                  Link Bahan Bacaan (Canva / Google Drive / Flipbook / Web / YouTube — Tanpa Sampul) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="https://www.canva.com/design/... atau https://drive.google.com/..."
+                  value={bahanUrl}
+                  onChange={(e) => setBahanUrl(e.target.value)}
+                />
+              </div>
+
+              {bahanUrl.trim() && (
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ fontWeight: 800, marginBottom: '6px', color: 'var(--primary)' }}>
+                    👀 Preview Langsung Tampilan Bahan Bacaan:
+                  </div>
+                  <div
+                    className="video-frame-wrap"
+                    style={{ maxWidth: '560px', margin: 0, borderRadius: '12px' }}
+                  >
+                    <iframe
+                      src={getDirectEmbedUrl(bahanUrl.trim())}
+                      title="Preview Bahan Bacaan"
+                      allowFullScreen
+                    ></iframe>
                   </div>
                 </div>
-                <label
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontWeight: 800,
-                    color: 'var(--primary)',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={bahanData.show_simulator !== false}
-                    onChange={(e) => handleToggleSimulator(e.target.checked)}
-                  />
-                  Tampilkan Simulasi di Halaman Siswa
-                </label>
-              </div>
-            </div>
+              )}
+
+              <button type="submit" className="btn-sm" disabled={uploading}>
+                ➕ Tambahkan Link Bahan Bacaan
+              </button>
+            </form>
 
             <h3 style={{ marginBottom: '12px' }}>
-              🖼️ Daftar Gambar Slide Bahan Bacaan Saat Ini ({(bahanData.slides || []).length})
+              📋 Daftar Link Bahan Bacaan Saat Ini ({(bahanData.links || []).length})
             </h3>
-            <div className="guru-slide-grid">
-              {(bahanData.slides || []).map((slide, idx) => (
-                <div key={slide.id || idx} className="guru-slide-card">
-                  <img src={slide.url} alt={slide.alt || `Slide ${idx + 1}`} />
-                  <div className="guru-slide-footer">
-                    <span>Slide #{idx + 1}</span>
-                    <button
-                      type="button"
-                      className="qr-action-btn danger"
-                      onClick={() => handleDeleteBahanSlide(slide.id)}
+            <div className="essay-list">
+              {(bahanData.links || []).map((item) => (
+                <div
+                  key={item.id}
+                  className="essay-card"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '12px',
+                    flexWrap: 'wrap'
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: 800 }}>{item.title}</div>
+                    {item.subtitle && (
+                      <div style={{ fontSize: '0.9rem', color: '#555' }}>{item.subtitle}</div>
+                    )}
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 700 }}
                     >
-                      🗑️ Hapus Foto
-                    </button>
+                      {item.url} ↗
+                    </a>
                   </div>
+                  <button
+                    type="button"
+                    className="qr-action-btn danger"
+                    onClick={async () => {
+                      if (window.confirm(`Hapus ${item.title}?`)) {
+                        await handleDeleteBahanLink(item.id);
+                      }
+                    }}
+                  >
+                    🗑️ Hapus
+                  </button>
                 </div>
               ))}
             </div>

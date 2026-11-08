@@ -81,24 +81,7 @@ export const DEFAULT_SITE_CONTENTS = {
     ]
   },
   bahan_bacaan: {
-    show_simulator: true,
-    slides: [
-      {
-        id: 1,
-        url: '/assets/images/content-bahan-1.png',
-        alt: 'Bahan Bacaan: Persegi, Persegi Panjang, dan Segitiga pada Kearifan Lokal Banjar'
-      },
-      {
-        id: 2,
-        url: '/assets/images/content-bahan-2.png',
-        alt: 'Bahan Bacaan: Belah Ketupat, Layang-Layang, dan Lingkaran pada Kearifan Lokal Banjar'
-      },
-      {
-        id: 3,
-        url: '/assets/images/content-bahan-3.png',
-        alt: 'Rumus Luas dan Keliling Bangun Datar'
-      }
-    ]
+    links: []
   },
   daftar_pustaka: {
     images: [
