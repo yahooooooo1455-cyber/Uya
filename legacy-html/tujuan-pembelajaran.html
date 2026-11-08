@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tujuan Pembelajaran - Bangun Datar Kelas 4</title>
+  <link rel="icon" type="image/png" href="assets/images/logo.png" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="site-header">
+    <div class="nav-container">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="icon-btn mobile-toggle" id="mobileMenuBtn" aria-label="Buka Navigasi">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <a href="index.html" class="brand">
+          <img src="assets/images/logo.png" alt="Logo Tut Wuri Handayani & ULM" class="brand-logo" />
+          <span class="brand-title">Bangun Datar Kelas 4</span>
+        </a>
+      </div>
+
+      <nav aria-label="Navigasi Utama">
+        <ul class="nav-links">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link ">Halaman Muka</a>
+          </li>
+          <li class="nav-item">
+            <a href="petunjuk.html" class="nav-link ">Petunjuk</a>
+          </li>
+          <li class="nav-item">
+            <a href="tujuan-pembelajaran.html" class="nav-link active">Tujuan Pembelajaran</a>
+          </li>
+          <li class="nav-item">
+            <a href="bahan-bacaan.html" class="nav-link ">Bahan Bacaan</a>
+          </li>
+          <li class="nav-item">
+            <a href="video-pembelajaran.html" class="nav-link ">
+              Video Pembelajaran <span class="caret">▼</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a href="video-pembelajaran-1.html" class="dropdown-link ">Video Pembelajaran 1</a></li>
+              <li><a href="video-pembelajaran-2.html" class="dropdown-link ">Video Pembelajaran 2</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="ayo-berlatih.html" class="nav-link ">
+              Ayo Berlatih <span class="caret">▼</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a href="pilihan-ganda.html" class="dropdown-link ">Pilihan Ganda</a></li>
+              <li><a href="isian.html" class="dropdown-link ">Isian</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="daftar-pustaka.html" class="nav-link ">Daftar Pustaka</a>
+          </li>
+          <li class="nav-item">
+            <a href="penyusun.html" class="nav-link ">Penyusun</a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="icon-btn" id="openSearchBtn" title="Cari di situs ini" aria-label="Cari di situs ini">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MOBILE DRAWER -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer" aria-label="Menu Seluler">
+    <div class="drawer-header">
+      <a href="index.html" class="brand">
+        <img src="assets/images/logo.png" alt="Logo" class="brand-logo" style="height:34px;" />
+        <span class="brand-title" style="font-size:1.05rem;">Bangun Datar Kelas 4</span>
+      </a>
+      <button class="icon-btn" id="closeDrawerBtn" aria-label="Tutup Menu">✕</button>
+    </div>
+    <ul class="drawer-list">
+      <li><a href="index.html" class="drawer-link ">Halaman Muka</a></li>
+      <li><a href="petunjuk.html" class="drawer-link ">Petunjuk</a></li>
+      <li><a href="tujuan-pembelajaran.html" class="drawer-link active">Tujuan Pembelajaran</a></li>
+      <li><a href="bahan-bacaan.html" class="drawer-link ">Bahan Bacaan</a></li>
+      <li>
+        <a href="video-pembelajaran.html" class="drawer-link ">Video Pembelajaran</a>
+        <ul class="drawer-sublist">
+          <li><a href="video-pembelajaran-1.html" class="drawer-link ">↳ Video Pembelajaran 1</a></li>
+          <li><a href="video-pembelajaran-2.html" class="drawer-link ">↳ Video Pembelajaran 2</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="ayo-berlatih.html" class="drawer-link ">Ayo Berlatih</a>
+        <ul class="drawer-sublist">
+          <li><a href="pilihan-ganda.html" class="drawer-link ">↳ Pilihan Ganda</a></li>
+          <li><a href="isian.html" class="drawer-link ">↳ Isian</a></li>
+        </ul>
+      </li>
+      <li><a href="daftar-pustaka.html" class="drawer-link ">Daftar Pustaka</a></li>
+      <li><a href="penyusun.html" class="drawer-link ">Penyusun</a></li>
+    </ul>
+  </aside>
+
+  <!-- SEARCH MODAL -->
+  <div class="search-modal" id="searchModal" role="dialog" aria-modal="true" aria-label="Pencarian Situs">
+    <div class="search-dialog">
+      <div class="search-input-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="searchInput" class="search-input" placeholder="Cari materi, rumus, atau halaman..." autocomplete="off" />
+        <button class="icon-btn" id="closeSearchBtn" aria-label="Tutup Pencarian">✕</button>
+      </div>
+      <div class="search-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- HERO BANNER -->
+    <section class="hero-subpage">
+    <h1 class="hero-subpage-title">Tujuan Pembelajaran</h1>
+  </section>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    
+    <div class="slide-container">
+      <img src="assets/images/content-tujuan.png" alt="Tujuan Pembelajaran Bangun Datar" class="slide-img" />
+    </div>
+    <div class="btn-back-wrap">
+      <a href="index.html" class="btn-pill">Back</a>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p>Media Pembelajaran Interaktif <strong>Kearifan Lokal di Kalimantan Selatan — Materi Bangun Datar Kelas IV SD (Fase B)</strong></p>
+    <p style="font-size:0.82rem;margin-top:4px;opacity:0.8;">Universitas Lambung Mangkurat • Kurikulum Merdeka</p>
+  </footer>
+
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
