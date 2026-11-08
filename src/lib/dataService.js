@@ -141,23 +141,34 @@ export async function fetchVideos() {
   return Array.isArray(list) ? list : DEFAULT_VIDEOS;
 }
 
+export function extractYouTubeId(url) {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+}
+
 export function convertYouTubeToEmbed(url) {
   if (!url) return '';
   if (url.includes('youtube.com/embed/')) return url;
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-  const match = url.match(regExp);
-  const videoId = match && match[2].length === 11 ? match[2] : null;
+  const videoId = extractYouTubeId(url);
   return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+}
+
+export function getYouTubeThumbnail(url) {
+  const videoId = extractYouTubeId(url);
+  return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
 }
 
 export async function addVideo(item) {
   const embed_url = item.embed_url || convertYouTubeToEmbed(item.youtube_url);
+  const autoThumb = getYouTubeThumbnail(item.youtube_url);
   const payload = {
     title: item.title.trim(),
     subtitle: (item.subtitle || '').trim(),
     youtube_url: item.youtube_url.trim(),
     embed_url,
-    thumbnail_url: item.thumbnail_url || '/assets/images/thumb-video-1.png'
+    thumbnail_url: item.thumbnail_url || autoThumb || '/assets/images/thumb-video-1.png'
   };
 
   const supabase = getSupabaseClient();

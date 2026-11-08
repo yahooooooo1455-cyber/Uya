@@ -19,8 +19,11 @@ import {
   fetchVideos,
   addVideo,
   deleteVideo,
-  syncLocalDataToSupabase
+  syncLocalDataToSupabase,
+  convertYouTubeToEmbed,
+  getYouTubeThumbnail
 } from '../lib/dataService';
+import { getAutoWebPreviewUrl } from '../components/ExternalLinkCardWithQR';
 import { DEFAULT_SITE_CONTENTS } from '../data/defaultData';
 
 export default function AdminKelola() {
@@ -247,7 +250,7 @@ export default function AdminKelola() {
     );
   };
 
-  // 4. Tambah Video Pembelajaran (Link)
+  // 4. Tambah Video Pembelajaran (Link Tanpa Sampul)
   const handleAddVideo = async (e) => {
     e.preventDefault();
     if (!vidTitle.trim() || !vidYoutube.trim()) return;
@@ -255,7 +258,7 @@ export default function AdminKelola() {
       title: vidTitle,
       subtitle: vidSubtitle,
       youtube_url: vidYoutube,
-      thumbnail_url: vidThumb || '/assets/images/thumb-video-1.png'
+      thumbnail_url: getYouTubeThumbnail(vidYoutube)
     });
     setVidTitle('');
     setVidSubtitle('');
@@ -265,7 +268,7 @@ export default function AdminKelola() {
     showToast('✓ Link Video Pembelajaran berhasil disimpan!');
   };
 
-  // 5. Tambah Link Soal Ayo Berlatih & QR Code
+  // 5. Tambah Link Soal Ayo Berlatih & QR Code (Tanpa Sampul Manual)
   const handleAddLatihanLink = async (e) => {
     e.preventDefault();
     if (!latTitle.trim() || !latUrl.trim()) return;
@@ -278,7 +281,7 @@ export default function AdminKelola() {
       title: latTitle,
       description: latDesc,
       url: formattedUrl,
-      thumbnail_url: latThumb || '/assets/images/thumb-wordwall.jpg',
+      thumbnail_url: '',
       custom_qr_url: qrMode === 'upload' ? latCustomQr : '',
       show_qr: qrMode !== 'none'
     });
@@ -637,12 +640,17 @@ export default function AdminKelola() {
           </section>
         )}
 
-        {/* ==================== 4. TAB VIDEO PEMBELAJARAN (LINK YOUTUBE) ==================== */}
+        {/* ==================== 4. TAB VIDEO PEMBELAJARAN (LINK YOUTUBE TANPA SAMPUL) ==================== */}
         {activeTab === 'video' && (
           <section className="interactive-panel" style={{ marginTop: 0 }}>
             <h2 className="panel-title">🎬 Kelola Link Video Pembelajaran</h2>
             <p className="panel-subtitle">
-              Masukkan link video dari YouTube untuk ditampilkan di menu Video Pembelajaran siswa.
+              Cukup tempelkan link YouTube (tanpa perlu upload foto sampul). Tampilan pemutar video
+              YouTube akan langsung muncul otomatis di halaman{' '}
+              <Link to="/video-pembelajaran" style={{ color: 'var(--primary)', fontWeight: 800 }}>
+                Video Pembelajaran Siswa ↗
+              </Link>
+              .
             </p>
 
             <form
@@ -666,43 +674,41 @@ export default function AdminKelola() {
                   <input
                     type="text"
                     required
-                    placeholder="Contoh: Luas & Keliling Bangun Datar"
+                    placeholder="Contoh: Penjumlahan & Pengurangan Bilangan Cacah"
                     value={vidSubtitle}
                     onChange={(e) => setVidSubtitle(e.target.value)}
                   />
                 </div>
               </div>
 
-              <div className="form-grid-2">
-                <div className="form-group">
-                  <label>Link YouTube Video Pembelajaran *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    value={vidYoutube}
-                    onChange={(e) => setVidYoutube(e.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Gambar Sampul Kartu Video (Opsional)</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setUploading(true);
-                      try {
-                        const res = await uploadImageToCloudinary(file);
-                        setVidThumb(res.url);
-                      } finally {
-                        setUploading(false);
-                      }
-                    }}
-                  />
-                </div>
+              <div className="form-group">
+                <label>Link YouTube Video Pembelajaran (Tanpa Perlu Upload Sampul) *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={vidYoutube}
+                  onChange={(e) => setVidYoutube(e.target.value)}
+                />
               </div>
+
+              {vidYoutube.trim() && (
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ fontWeight: 800, marginBottom: '6px', color: 'var(--primary)' }}>
+                    👀 Preview Langsung Tampilan Video:
+                  </div>
+                  <div
+                    className="video-frame-wrap"
+                    style={{ maxWidth: '520px', margin: 0, borderRadius: '12px' }}
+                  >
+                    <iframe
+                      src={convertYouTubeToEmbed(vidYoutube.trim())}
+                      title="Preview Video YouTube"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                </div>
+              )}
 
               <button type="submit" className="btn-sm" disabled={uploading}>
                 ➕ Tambahkan Link Video
@@ -753,14 +759,14 @@ export default function AdminKelola() {
           </section>
         )}
 
-        {/* ==================== 5. TAB AYO BERLATIH (LINK SOAL & QR FLEKSIBEL) ==================== */}
+        {/* ==================== 5. TAB AYO BERLATIH (LINK SOAL & QR TANPA SAMPUL) ==================== */}
         {activeTab === 'latihan' && (
           <section className="interactive-panel" style={{ marginTop: 0 }}>
             <h2 className="panel-title">🎮 Kelola Link Soal &amp; QR Code (Ayo Berlatih)</h2>
             <p className="panel-subtitle">
-              Masukkan link soal latihan (seperti Wordwall, Quizizz, Google Form). Untuk{' '}
-              <strong>QR Code</strong>, bisa diatur <strong>Muncul Otomatis dari Link</strong> atau{' '}
-              <strong>Upload Foto QR Sendiri</strong> jika ada gambarnya dari klien!
+              Cukup masukkan link soal (Wordwall, Quizizz, Google Form, dll.) tanpa perlu upload
+              sampul. Tampilan preview web, tombol mainkan langsung di halaman, dan{' '}
+              <strong>QR Code</strong> akan muncul secara otomatis!
             </p>
 
             <form
@@ -784,7 +790,7 @@ export default function AdminKelola() {
                   <input
                     type="text"
                     required
-                    placeholder="Contoh: Soal Pilihan Ganda Matematika Materi Bangun Datar"
+                    placeholder="Contoh: Soal Pilihan Ganda Matematika"
                     value={latTitle}
                     onChange={(e) => setLatTitle(e.target.value)}
                   />
@@ -802,43 +808,24 @@ export default function AdminKelola() {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Deskripsi Singkat (Opsional)</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Membuka kotak - Ketuk setiap kotak secara giliran..."
-                  value={latDesc}
-                  onChange={(e) => setLatDesc(e.target.value)}
-                />
-              </div>
-
               <div className="form-grid-2">
+                <div className="form-group">
+                  <label>Deskripsi Singkat (Opsional)</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Membuka kotak - Ketuk setiap kotak secara giliran..."
+                    value={latDesc}
+                    onChange={(e) => setLatDesc(e.target.value)}
+                  />
+                </div>
+
                 <div className="form-group">
                   <label>Pengaturan Tampilan QR Code *</label>
                   <select value={qrMode} onChange={(e) => setQrMode(e.target.value)}>
                     <option value="auto">⚡ Munculkan QR Otomatis dari Link Soal</option>
                     <option value="upload">🖼️ Upload Foto QR Code Sendiri</option>
-                    <option value="none">🚫 Tanpa QR Code (Hanya Link Kartu)</option>
+                    <option value="none">🚫 Tanpa QR Code (Hanya Tampilan Link)</option>
                   </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Upload Foto Sampul Kartu Link (Opsional)</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setUploading(true);
-                      try {
-                        const res = await uploadImageToCloudinary(file);
-                        setLatThumb(res.url);
-                      } finally {
-                        setUploading(false);
-                      }
-                    }}
-                  />
                 </div>
               </div>
 
@@ -869,26 +856,45 @@ export default function AdminKelola() {
                 </div>
               )}
 
-              {qrMode === 'auto' && latUrl.trim() && (
+              {latUrl.trim() && (
                 <div className="live-qr-preview">
-                  <div>
-                    <strong>✨ Preview QR Code Otomatis:</strong>
-                    <div style={{ fontSize: '0.86rem', color: '#555' }}>
-                      QR ini otomatis dibuat dari link: {latUrl.trim()}
-                    </div>
-                  </div>
-                  <div className="live-qr-box">
-                    <QRCodeCanvas
-                      value={
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                    <img
+                      src={getAutoWebPreviewUrl(
                         latUrl.trim().startsWith('http')
                           ? latUrl.trim()
                           : `https://${latUrl.trim()}`
-                      }
-                      size={90}
-                      level="H"
-                      includeMargin={true}
+                      )}
+                      alt="Preview Web Otomatis"
+                      style={{
+                        width: '140px',
+                        height: '88px',
+                        objectFit: 'cover',
+                        borderRadius: '8px',
+                        border: '1px solid #ccc'
+                      }}
                     />
+                    <div>
+                      <strong>✨ Preview Tampilan Web &amp; QR Otomatis (Tanpa Sampul):</strong>
+                      <div style={{ fontSize: '0.86rem', color: '#555' }}>
+                        Otomatis diambil dari link: {latUrl.trim()}
+                      </div>
+                    </div>
                   </div>
+                  {qrMode === 'auto' && (
+                    <div className="live-qr-box">
+                      <QRCodeCanvas
+                        value={
+                          latUrl.trim().startsWith('http')
+                            ? latUrl.trim()
+                            : `https://${latUrl.trim()}`
+                        }
+                        size={90}
+                        level="H"
+                        includeMargin={true}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 

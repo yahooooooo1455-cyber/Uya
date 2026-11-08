@@ -1,10 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
+import { convertYouTubeToEmbed, extractYouTubeId } from '../lib/dataService';
 
 /**
- * Komponen Tampilan Kartu Link & QR Code khusus untuk Siswa (Anak SD).
- * Bersih tanpa tombol edit/hapus agar murid tidak bisa mengutak-atik data.
+ * Mengubah URL kuis/web populer (Wordwall, YouTube, Google Form, Canva) menjadi URL Embed
+ * sehingga tampilan asli web/videonya bisa langsung muncul di halaman tanpa sampul.
  */
+export function getDirectEmbedUrl(rawUrl) {
+  if (!rawUrl) return '';
+  const url = rawUrl.trim();
+
+  // 1. YouTube
+  if (extractYouTubeId(url)) {
+    return convertYouTubeToEmbed(url);
+  }
+
+  // 2. Wordwall (contoh: https://wordwall.net/id/resource/105516598 -> https://wordwall.net/id/embed/resource/105516598)
+  const wordwallMatch = url.match(/wordwall\.net\/(?:([a-z]{2})\/)?(?:play|resource)\/(\d+)/i);
+  if (wordwallMatch) {
+    const lang = wordwallMatch[1] ? `${wordwallMatch[1]}/` : '';
+    return `https://wordwall.net/${lang}embed/resource/${wordwallMatch[2]}`;
+  }
+
+  // 3. Google Forms
+  if (url.includes('docs.google.com/forms') && !url.includes('embedded=true')) {
+    return url.includes('?') ? `${url}&embedded=true` : `${url}?embedded=true`;
+  }
+
+  // 4. Canva Design
+  if (url.includes('canva.com/design/') && !url.includes('?embed')) {
+    const baseCanva = url.split('?')[0].replace(/\/edit$/, '/view');
+    return `${baseCanva}?embed`;
+  }
+
+  return url;
+}
+
+/**
+ * Menghasilkan URL Screenshot / Preview otomatis dari alamat website tanpa perlu upload sampul.
+ */
+export function getAutoWebPreviewUrl(rawUrl) {
+  if (!rawUrl) return '';
+  const url = rawUrl.trim();
+  const ytId = extractYouTubeId(url);
+  if (ytId) {
+    return `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+  }
+  return `https://image.thum.io/get/width/640/crop/380/noanimate/${url}`;
+}
+
 export default function ExternalLinkSection({ links = [] }) {
   const [zoomQrItem, setZoomQrItem] = useState(null);
 
@@ -83,32 +127,132 @@ export default function ExternalLinkSection({ links = [] }) {
 
 function StudentExternalCard({ item, onZoomQr }) {
   const [imgError, setImgError] = useState(false);
+  const [autoMeta, setAutoMeta] = useState(null);
+  const [showLiveEmbed, setShowLiveEmbed] = useState(false);
+
   const cleanDomain = (item.url || '').replace(/^https?:\/\//, '');
+  const embedUrl = getDirectEmbedUrl(item.url);
+
+  // Ambil preview gambar & judul otomatis dari link website (via Microlink API gratis)
+  useEffect(() => {
+    if (!item.url) return;
+    let active = true;
+    fetch(
+      `https://api.microlink.io/?url=${encodeURIComponent(item.url)}&screenshot=true`
+    )
+      .then((r) => r.json())
+      .then((res) => {
+        if (active && res?.status === 'success' && res?.data) {
+          setAutoMeta({
+            image: res.data.image?.url || res.data.screenshot?.url || '',
+            title: res.data.title || '',
+            description: res.data.description || ''
+          });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [item.url]);
+
+  const previewImg =
+    (item.thumbnail_url &&
+    item.thumbnail_url !== '/assets/images/thumb-wordwall.jpg' &&
+    item.thumbnail_url !== '/assets/images/thumb-sibi.jpg'
+      ? item.thumbnail_url
+      : '') ||
+    autoMeta?.image ||
+    item.thumbnail_url ||
+    getAutoWebPreviewUrl(item.url);
+
+  const displayTitle = item.title || autoMeta?.title || cleanDomain;
+  const displayDesc = item.description || autoMeta?.description || '';
 
   return (
-    <div style={{ marginBottom: '32px' }}>
-      <a
-        href={item.url}
-        target="_blank"
-        rel="noopener noreferrer"
+    <div style={{ marginBottom: '36px' }}>
+      {/* KARTU PREVIEW OTOMATIS DARI LINK WEB */}
+      <div
         className="external-card"
+        style={{ flexDirection: 'column', alignItems: 'stretch', cursor: 'default' }}
       >
-        {item.thumbnail_url && (
-          <img
-            src={item.thumbnail_url}
-            alt={item.title}
-            className="external-card-img"
-            onError={(e) => {
-              e.currentTarget.src = '/assets/images/card-game.jpg';
-            }}
-          />
-        )}
-        <div className="external-card-body">
-          <div className="external-card-title">{item.title}</div>
-          {item.description && <div className="external-card-desc">{item.description}</div>}
-          <div className="external-card-domain">🎮 {cleanDomain} ↗</div>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'stretch'
+          }}
+        >
+          {previewImg && (
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'block', flexShrink: 0 }}
+            >
+              <img
+                src={previewImg}
+                alt={displayTitle}
+                className="external-card-img"
+                style={{ height: '100%', minHeight: '160px' }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </a>
+          )}
+          <div className="external-card-body" style={{ flex: 1, minWidth: '240px' }}>
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none', color: 'inherit' }}
+            >
+              <div className="external-card-title">{displayTitle}</div>
+              {displayDesc && <div className="external-card-desc">{displayDesc}</div>}
+              <div className="external-card-domain">🌐 {cleanDomain} ↗</div>
+            </a>
+
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '14px' }}>
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-sm"
+                style={{ textDecoration: 'none' }}
+              >
+                🚀 Buka Link Soal ↗
+              </a>
+              <button
+                type="button"
+                className="btn-sm btn-outline"
+                onClick={() => setShowLiveEmbed(!showLiveEmbed)}
+              >
+                {showLiveEmbed ? '🔼 Sembunyikan Tampilan Web' : '▶️ Tampilkan Web Langsung di Sini'}
+              </button>
+            </div>
+          </div>
         </div>
-      </a>
+
+        {/* TAMPILAN LANGSUNG WEB / GAME DI DALAM HALAMAN (IFRAME) */}
+        {showLiveEmbed && (
+          <div
+            style={{
+              width: '100%',
+              borderTop: '2px solid var(--primary-light)',
+              background: '#000'
+            }}
+          >
+            <iframe
+              src={embedUrl}
+              title={displayTitle}
+              style={{ width: '100%', height: '500px', border: 'none', display: 'block' }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              allowFullScreen
+            ></iframe>
+          </div>
+        )}
+      </div>
 
       {item.show_qr !== false && (
         <div className="qr-box">
@@ -120,7 +264,7 @@ function StudentExternalCard({ item, onZoomQr }) {
             {item.custom_qr_url && !imgError ? (
               <img
                 src={item.custom_qr_url}
-                alt={`QR Code ${item.title}`}
+                alt={`QR Code ${displayTitle}`}
                 onError={() => setImgError(true)}
               />
             ) : (
