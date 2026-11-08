@@ -54,14 +54,10 @@ export default function AdminKelola() {
   const [qrMode, setQrMode] = useState('auto'); // 'auto' | 'upload' | 'none'
   const [latCustomQr, setLatCustomQr] = useState('');
 
-  // 6. State Daftar Pustaka (Link Referensi)
-  const [pustakaLinks, setPustakaLinks] = useState([]);
-  const [pusTitle, setPusTitle] = useState('');
-  const [pusDesc, setPusDesc] = useState('');
-  const [pusUrl, setPusUrl] = useState('');
-  const [pusThumb, setPusThumb] = useState('');
+  // 6. State Daftar Pustaka (Upload Foto Saja seperti No 1 & 2)
+  const [pustakaData, setPustakaData] = useState(DEFAULT_SITE_CONTENTS.daftar_pustaka);
 
-  // 7. State Penyusun (Upload Gambar Saja)
+  // 7. State Penyusun (Upload Foto Saja)
   const [penyusunData, setPenyusunData] = useState(DEFAULT_SITE_CONTENTS.penyusun);
 
   // 8. State Konfigurasi Cloud
@@ -73,10 +69,11 @@ export default function AdminKelola() {
   };
 
   const loadAllData = async () => {
-    const [p, t, b, pen, allLinks, vids] = await Promise.all([
+    const [p, t, b, pus, pen, allLinks, vids] = await Promise.all([
       fetchSiteContent('petunjuk'),
       fetchSiteContent('tujuan'),
       fetchSiteContent('bahan_bacaan'),
+      fetchSiteContent('daftar_pustaka'),
       fetchSiteContent('penyusun'),
       fetchExternalLinks(),
       fetchVideos()
@@ -87,7 +84,7 @@ export default function AdminKelola() {
         ...p,
         images:
           Array.isArray(p.images) && p.images.length > 0
-            ? p.images
+            ? [p.images[0]]
             : DEFAULT_SITE_CONTENTS.petunjuk.images
       });
     }
@@ -96,19 +93,35 @@ export default function AdminKelola() {
         ...t,
         images:
           Array.isArray(t.images) && t.images.length > 0
-            ? t.images
+            ? [t.images[0]]
             : DEFAULT_SITE_CONTENTS.tujuan.images
       });
     }
     if (b) setBahanData(b);
-    if (pen) setPenyusunData(pen);
+    if (pus) {
+      setPustakaData({
+        ...pus,
+        images:
+          Array.isArray(pus.images) && pus.images.length > 0
+            ? [pus.images[0]]
+            : DEFAULT_SITE_CONTENTS.daftar_pustaka.images
+      });
+    }
+    if (pen) {
+      setPenyusunData({
+        ...pen,
+        images:
+          Array.isArray(pen.images) && pen.images.length > 0
+            ? [pen.images[0]]
+            : DEFAULT_SITE_CONTENTS.penyusun.images
+      });
+    }
 
     setLatihanLinks(
       (allLinks || []).filter(
         (x) => x.category === 'pilihan-ganda' || x.category === 'isian'
       )
     );
-    setPustakaLinks((allLinks || []).filter((x) => x.category === 'daftar-pustaka'));
     setVideos(vids || []);
   };
 
@@ -278,33 +291,8 @@ export default function AdminKelola() {
     showToast('✓ Link Soal & QR Code Ayo Berlatih berhasil ditambahkan!');
   };
 
-  // 6. Tambah Link Daftar Pustaka
-  const handleAddPustakaLink = async (e) => {
-    e.preventDefault();
-    if (!pusTitle.trim() || !pusUrl.trim()) return;
-    let formattedUrl = pusUrl.trim();
-    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-      formattedUrl = 'https://' + formattedUrl;
-    }
-    await addExternalLink({
-      category: 'daftar-pustaka',
-      title: pusTitle,
-      description: pusDesc,
-      url: formattedUrl,
-      thumbnail_url: pusThumb || '/assets/images/thumb-sibi.jpg',
-      custom_qr_url: '',
-      show_qr: false
-    });
-    setPusTitle('');
-    setPusDesc('');
-    setPusUrl('');
-    setPusThumb('');
-    await loadAllData();
-    showToast('✓ Link Daftar Pustaka berhasil ditambahkan!');
-  };
-
-  // 7. Upload Gambar Penyusun
-  const handleReplacePenyusunImage = async (e, replaceAll = false) => {
+  // 6. Upload Gambar Daftar Pustaka (1 Gambar Saja seperti No 1 & 2)
+  const handleUploadPustakaImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
@@ -313,12 +301,33 @@ export default function AdminKelola() {
       const newImg = {
         id: Date.now(),
         url: res.url,
-        alt: 'Tim Penyusun'
+        alt: file.name || 'Daftar Pustaka'
       };
-      const nextImages = replaceAll
-        ? [newImg]
-        : [...(penyusunData.images || []), newImg];
-      const updated = { images: nextImages };
+      const updated = { images: [newImg] };
+      setPustakaData(updated);
+      await saveSiteContent('daftar_pustaka', updated);
+      showToast('✓ Gambar Daftar Pustaka berhasil diperbarui!');
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  // 7. Upload Gambar Penyusun (1 Gambar Saja)
+  const handleReplacePenyusunImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploading(true);
+      const res = await uploadImageToCloudinary(file);
+      const newImg = {
+        id: Date.now(),
+        url: res.url,
+        alt: file.name || 'Tim Penyusun'
+      };
+      const updated = { images: [newImg] };
       setPenyusunData(updated);
       await saveSiteContent('penyusun', updated);
       showToast('✓ Gambar Penyusun berhasil diperbarui!');
@@ -328,14 +337,6 @@ export default function AdminKelola() {
       setUploading(false);
       e.target.value = '';
     }
-  };
-
-  const handleDeletePenyusunImage = async (id) => {
-    const nextImages = (penyusunData.images || []).filter((img) => img.id !== id);
-    const updated = { images: nextImages };
-    setPenyusunData(updated);
-    await saveSiteContent('penyusun', updated);
-    showToast('✓ Gambar Penyusun dihapus.');
   };
 
   return (
@@ -421,13 +422,13 @@ export default function AdminKelola() {
             className={`admin-tab-btn ${activeTab === 'pustaka' ? 'active' : ''}`}
             onClick={() => setActiveTab('pustaka')}
           >
-            6. 📖 Daftar Pustaka (Link)
+            6. 📖 Daftar Pustaka (Upload Foto)
           </button>
           <button
             className={`admin-tab-btn ${activeTab === 'penyusun' ? 'active' : ''}`}
             onClick={() => setActiveTab('penyusun')}
           >
-            7. 👥 Penyusun (Upload Gambar)
+            7. 👥 Penyusun (Upload Foto)
           </button>
           <button
             className={`admin-tab-btn ${activeTab === 'cloud' ? 'active' : ''}`}
@@ -437,12 +438,13 @@ export default function AdminKelola() {
           </button>
         </div>
 
-        {/* ==================== 1. TAB PETUNJUK (UPLOAD FOTO) ==================== */}
+        {/* ==================== 1. TAB PETUNJUK (CUKUP 1 UPLOAD FOTO) ==================== */}
         {activeTab === 'petunjuk' && (
           <section className="interactive-panel" style={{ marginTop: 0 }}>
             <h2 className="panel-title">🖼️ Upload Gambar Halaman Petunjuk</h2>
             <p className="panel-subtitle">
-              Unggah gambar desain Petunjuk (misalnya dari Canva). Gambar otomatis tampil di halaman{' '}
+              Cukup pilih 1 kali file gambar desain Petunjuk dari Canva untuk langsung mengganti
+              tampilan di halaman{' '}
               <Link to="/petunjuk" style={{ color: 'var(--primary)', fontWeight: 800 }}>
                 Petunjuk Siswa ↗
               </Link>
@@ -450,25 +452,14 @@ export default function AdminKelola() {
             </p>
 
             <div className="add-link-card" style={{ marginBottom: '24px' }}>
-              <div className="form-grid-2">
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label>🔄 Ganti Gambar Petunjuk Utama</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={uploading}
-                    onChange={(e) => handleUploadPetunjukImage(e, true)}
-                  />
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label>➕ Tambah Gambar Petunjuk Tambahan</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={uploading}
-                    onChange={(e) => handleUploadPetunjukImage(e, false)}
-                  />
-                </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>📤 Upload / Ganti Gambar Petunjuk (Dari Canva)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploading}
+                  onChange={(e) => handleUploadPetunjukImage(e, true)}
+                />
               </div>
               {uploading && (
                 <div style={{ marginTop: '10px', color: 'var(--primary)', fontWeight: 700 }}>
@@ -477,51 +468,40 @@ export default function AdminKelola() {
               )}
             </div>
 
-            <div style={{ display: 'grid', gap: '18px' }}>
-              {(petunjukData.images || []).map((img, idx) => (
-                <div
-                  key={img.id || idx}
-                  style={{
-                    background: '#fff',
-                    padding: '16px',
-                    borderRadius: '14px',
-                    boxShadow: 'var(--shadow-sm)'
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '12px'
-                    }}
-                  >
-                    <strong>Gambar Petunjuk #{idx + 1}</strong>
-                    <button
-                      type="button"
-                      className="btn-sm btn-danger"
-                      onClick={() => handleDeletePetunjukImage(img.id)}
-                    >
-                      🗑 Hapus Gambar Ini
-                    </button>
-                  </div>
-                  <img
-                    src={img.url}
-                    alt={img.alt || 'Petunjuk'}
-                    style={{ width: '100%', maxHeight: '420px', objectFit: 'contain', borderRadius: '10px' }}
-                  />
+            {petunjukData.images?.[0] && (
+              <div
+                style={{
+                  background: '#fff',
+                  padding: '16px',
+                  borderRadius: '14px',
+                  boxShadow: 'var(--shadow-sm)'
+                }}
+              >
+                <div style={{ marginBottom: '12px', fontWeight: 800 }}>
+                  👀 Gambar Petunjuk Saat Ini:
                 </div>
-              ))}
-            </div>
+                <img
+                  src={petunjukData.images[0].url}
+                  alt={petunjukData.images[0].alt || 'Petunjuk'}
+                  style={{
+                    width: '100%',
+                    maxHeight: '460px',
+                    objectFit: 'contain',
+                    borderRadius: '10px'
+                  }}
+                />
+              </div>
+            )}
           </section>
         )}
 
-        {/* ==================== 2. TAB TUJUAN PEMBELAJARAN (UPLOAD FOTO) ==================== */}
+        {/* ==================== 2. TAB TUJUAN PEMBELAJARAN (CUKUP 1 UPLOAD FOTO) ==================== */}
         {activeTab === 'tujuan' && (
           <section className="interactive-panel" style={{ marginTop: 0 }}>
             <h2 className="panel-title">🎯 Upload Gambar Tujuan Pembelajaran</h2>
             <p className="panel-subtitle">
-              Unggah gambar desain Tujuan Pembelajaran (misalnya dari Canva). Gambar otomatis tampil di halaman{' '}
+              Cukup pilih 1 kali file gambar desain Tujuan Pembelajaran dari Canva untuk langsung
+              mengganti tampilan di halaman{' '}
               <Link to="/tujuan-pembelajaran" style={{ color: 'var(--primary)', fontWeight: 800 }}>
                 Tujuan Pembelajaran Siswa ↗
               </Link>
@@ -529,25 +509,14 @@ export default function AdminKelola() {
             </p>
 
             <div className="add-link-card" style={{ marginBottom: '24px' }}>
-              <div className="form-grid-2">
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label>🔄 Ganti Gambar Tujuan Pembelajaran Utama</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={uploading}
-                    onChange={(e) => handleUploadTujuanImage(e, true)}
-                  />
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label>➕ Tambah Gambar Tujuan Pembelajaran Tambahan</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={uploading}
-                    onChange={(e) => handleUploadTujuanImage(e, false)}
-                  />
-                </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>📤 Upload / Ganti Gambar Tujuan Pembelajaran (Dari Canva)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploading}
+                  onChange={(e) => handleUploadTujuanImage(e, true)}
+                />
               </div>
               {uploading && (
                 <div style={{ marginTop: '10px', color: 'var(--primary)', fontWeight: 700 }}>
@@ -556,42 +525,30 @@ export default function AdminKelola() {
               )}
             </div>
 
-            <div style={{ display: 'grid', gap: '18px' }}>
-              {(tujuanData.images || []).map((img, idx) => (
-                <div
-                  key={img.id || idx}
-                  style={{
-                    background: '#fff',
-                    padding: '16px',
-                    borderRadius: '14px',
-                    boxShadow: 'var(--shadow-sm)'
-                  }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '12px'
-                    }}
-                  >
-                    <strong>Gambar Tujuan Pembelajaran #{idx + 1}</strong>
-                    <button
-                      type="button"
-                      className="btn-sm btn-danger"
-                      onClick={() => handleDeleteTujuanImage(img.id)}
-                    >
-                      🗑 Hapus Gambar Ini
-                    </button>
-                  </div>
-                  <img
-                    src={img.url}
-                    alt={img.alt || 'Tujuan Pembelajaran'}
-                    style={{ width: '100%', maxHeight: '420px', objectFit: 'contain', borderRadius: '10px' }}
-                  />
+            {tujuanData.images?.[0] && (
+              <div
+                style={{
+                  background: '#fff',
+                  padding: '16px',
+                  borderRadius: '14px',
+                  boxShadow: 'var(--shadow-sm)'
+                }}
+              >
+                <div style={{ marginBottom: '12px', fontWeight: 800 }}>
+                  👀 Gambar Tujuan Pembelajaran Saat Ini:
                 </div>
-              ))}
-            </div>
+                <img
+                  src={tujuanData.images[0].url}
+                  alt={tujuanData.images[0].alt || 'Tujuan Pembelajaran'}
+                  style={{
+                    width: '100%',
+                    maxHeight: '460px',
+                    objectFit: 'contain',
+                    borderRadius: '10px'
+                  }}
+                />
+              </div>
+            )}
           </section>
         )}
 
@@ -991,174 +948,117 @@ export default function AdminKelola() {
           </section>
         )}
 
-        {/* ==================== 6. TAB DAFTAR PUSTAKA (LINK) ==================== */}
+        {/* ==================== 6. TAB DAFTAR PUSTAKA (CUKUP 1 UPLOAD FOTO) ==================== */}
         {activeTab === 'pustaka' && (
           <section className="interactive-panel" style={{ marginTop: 0 }}>
-            <h2 className="panel-title">📖 Kelola Link Daftar Pustaka</h2>
+            <h2 className="panel-title">📖 Upload Gambar Halaman Daftar Pustaka</h2>
             <p className="panel-subtitle">
-              Masukkan link sumber buku atau referensi pembelajaran untuk halaman Daftar Pustaka.
-            </p>
-
-            <form
-              onSubmit={handleAddPustakaLink}
-              className="add-link-card"
-              style={{ marginBottom: '24px' }}
-            >
-              <div className="form-group">
-                <label>Judul Buku / Sumber Referensi *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: SIBI - Sistem Informasi Perbukuan Indonesia"
-                  value={pusTitle}
-                  onChange={(e) => setPusTitle(e.target.value)}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Link URL Referensi *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="https://buku.kemendikdasmen.go.id/..."
-                  value={pusUrl}
-                  onChange={(e) => setPusUrl(e.target.value)}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Deskripsi Buku / Pustaka</label>
-                <textarea
-                  rows={2}
-                  placeholder="Deskripsi singkat buku referensi..."
-                  value={pusDesc}
-                  onChange={(e) => setPusDesc(e.target.value)}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Gambar Sampul Buku / Web (Opsional)</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    setUploading(true);
-                    try {
-                      const res = await uploadImageToCloudinary(file);
-                      setPusThumb(res.url);
-                    } finally {
-                      setUploading(false);
-                    }
-                  }}
-                />
-              </div>
-
-              <button type="submit" className="btn-sm" disabled={uploading}>
-                ➕ Simpan Link Daftar Pustaka
-              </button>
-            </form>
-
-            <h3 style={{ marginBottom: '12px' }}>
-              📋 Daftar Pustaka Saat Ini ({pustakaLinks.length})
-            </h3>
-            <div className="essay-list">
-              {pustakaLinks.map((item) => (
-                <div
-                  key={item.id}
-                  className="essay-card"
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: '12px'
-                  }}
-                >
-                  <div>
-                    <div style={{ fontWeight: 800 }}>{item.title}</div>
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ color: 'var(--primary)', fontSize: '0.86rem', fontWeight: 700 }}
-                    >
-                      {item.url} ↗
-                    </a>
-                  </div>
-                  <button
-                    type="button"
-                    className="qr-action-btn danger"
-                    onClick={async () => {
-                      if (window.confirm(`Hapus "${item.title}"?`)) {
-                        await deleteExternalLink(item.id);
-                        loadAllData();
-                      }
-                    }}
-                  >
-                    🗑️ Hapus
-                  </button>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ==================== 7. TAB PENYUSUN (UPLOAD GAMBAR SAJA) ==================== */}
-        {activeTab === 'penyusun' && (
-          <section className="interactive-panel" style={{ marginTop: 0 }}>
-            <h2 className="panel-title">👥 Upload Gambar Halaman Penyusun</h2>
-            <p className="panel-subtitle">
-              Unggah gambar profil tim penyusun untuk ditampilkan pada halaman{' '}
-              <Link to="/penyusun" style={{ color: 'var(--primary)', fontWeight: 800 }}>
-                Penyusun ↗
+              Cukup pilih 1 kali file gambar desain Daftar Pustaka dari Canva untuk langsung
+              mengganti tampilan di halaman{' '}
+              <Link to="/daftar-pustaka" style={{ color: 'var(--primary)', fontWeight: 800 }}>
+                Daftar Pustaka Siswa ↗
               </Link>
               .
             </p>
 
             <div className="add-link-card" style={{ marginBottom: '24px' }}>
-              <div className="form-grid-2">
-                <div className="form-group">
-                  <label>🔄 Ganti Gambar Utama Penyusun (Upload Foto)</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleReplacePenyusunImage(e, true)}
-                    disabled={uploading}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>➕ Atau Tambah Slide Gambar Penyusun Baru</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleReplacePenyusunImage(e, false)}
-                    disabled={uploading}
-                  />
-                </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>📤 Upload / Ganti Gambar Daftar Pustaka (Dari Canva)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploading}
+                  onChange={handleUploadPustakaImage}
+                />
               </div>
-              {uploading && <span className="upload-badge">⏳ Sedang mengunggah gambar...</span>}
+              {uploading && (
+                <div style={{ marginTop: '10px', color: 'var(--primary)', fontWeight: 700 }}>
+                  ⏳ Sedang mengunggah gambar ke Cloudinary...
+                </div>
+              )}
             </div>
 
-            <div className="guru-slide-grid">
-              {(penyusunData.images || []).map((img, idx) => (
-                <div key={img.id || idx} className="guru-slide-card">
-                  <img src={img.url} alt={img.alt || 'Penyusun'} />
-                  <div className="guru-slide-footer">
-                    <span>Gambar Penyusun #{idx + 1}</span>
-                    {(penyusunData.images || []).length > 1 && (
-                      <button
-                        type="button"
-                        className="qr-action-btn danger"
-                        onClick={() => handleDeletePenyusunImage(img.id)}
-                      >
-                        🗑️ Hapus
-                      </button>
-                    )}
-                  </div>
+            {pustakaData.images?.[0] && (
+              <div
+                style={{
+                  background: '#fff',
+                  padding: '16px',
+                  borderRadius: '14px',
+                  boxShadow: 'var(--shadow-sm)'
+                }}
+              >
+                <div style={{ marginBottom: '12px', fontWeight: 800 }}>
+                  👀 Gambar Daftar Pustaka Saat Ini:
                 </div>
-              ))}
+                <img
+                  src={pustakaData.images[0].url}
+                  alt={pustakaData.images[0].alt || 'Daftar Pustaka'}
+                  style={{
+                    width: '100%',
+                    maxHeight: '460px',
+                    objectFit: 'contain',
+                    borderRadius: '10px'
+                  }}
+                />
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ==================== 7. TAB PENYUSUN (CUKUP 1 UPLOAD FOTO) ==================== */}
+        {activeTab === 'penyusun' && (
+          <section className="interactive-panel" style={{ marginTop: 0 }}>
+            <h2 className="panel-title">👥 Upload Gambar Halaman Penyusun / Penulis</h2>
+            <p className="panel-subtitle">
+              Cukup pilih 1 kali file gambar desain Penyusun dari Canva untuk langsung mengganti
+              tampilan di halaman{' '}
+              <Link to="/penyusun" style={{ color: 'var(--primary)', fontWeight: 800 }}>
+                Penulis ↗
+              </Link>
+              .
+            </p>
+
+            <div className="add-link-card" style={{ marginBottom: '24px' }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>📤 Upload / Ganti Gambar Penyusun (Dari Canva)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleReplacePenyusunImage}
+                  disabled={uploading}
+                />
+              </div>
+              {uploading && (
+                <div style={{ marginTop: '10px', color: 'var(--primary)', fontWeight: 700 }}>
+                  ⏳ Sedang mengunggah gambar ke Cloudinary...
+                </div>
+              )}
             </div>
+
+            {penyusunData.images?.[0] && (
+              <div
+                style={{
+                  background: '#fff',
+                  padding: '16px',
+                  borderRadius: '14px',
+                  boxShadow: 'var(--shadow-sm)'
+                }}
+              >
+                <div style={{ marginBottom: '12px', fontWeight: 800 }}>
+                  👀 Gambar Penyusun Saat Ini:
+                </div>
+                <img
+                  src={penyusunData.images[0].url}
+                  alt={penyusunData.images[0].alt || 'Penyusun'}
+                  style={{
+                    width: '100%',
+                    maxHeight: '460px',
+                    objectFit: 'contain',
+                    borderRadius: '10px'
+                  }}
+                />
+              </div>
+            )}
           </section>
         )}
 

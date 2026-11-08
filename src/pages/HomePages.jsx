@@ -159,10 +159,13 @@ export function Petunjuk() {
     });
   }, []);
 
-  const imageList =
-    Array.isArray(data?.images) && data.images.length > 0
+  const imageList = (
+    Array.isArray(data?.images) &&
+    data.images.length > 0 &&
+    data.images[0].url !== '/assets/images/content-petunjuk.png'
       ? data.images
-      : DEFAULT_SITE_CONTENTS.petunjuk.images;
+      : DEFAULT_SITE_CONTENTS.petunjuk.images
+  ).slice(0, 1);
 
   return (
     <>
@@ -208,10 +211,11 @@ export function TujuanPembelajaran() {
     });
   }, []);
 
-  const imageList =
+  const imageList = (
     Array.isArray(data?.images) && data.images.length > 0
       ? data.images
-      : DEFAULT_SITE_CONTENTS.tujuan.images;
+      : DEFAULT_SITE_CONTENTS.tujuan.images
+  ).slice(0, 1);
 
   return (
     <>
@@ -584,11 +588,21 @@ export function BahanBacaan() {
 }
 
 export function DaftarPustaka() {
-  const [links, setLinks] = useState([]);
+  const [pustakaData, setPustakaData] = useState(DEFAULT_SITE_CONTENTS.daftar_pustaka);
 
   useEffect(() => {
-    fetchExternalLinks('daftar-pustaka').then(setLinks);
+    fetchSiteContent('daftar_pustaka').then((res) => {
+      if (res && Array.isArray(res.images) && res.images.length > 0) {
+        setPustakaData(res);
+      }
+    });
   }, []);
+
+  const imageList = (
+    Array.isArray(pustakaData?.images) && pustakaData.images.length > 0
+      ? pustakaData.images
+      : DEFAULT_SITE_CONTENTS.daftar_pustaka.images
+  ).slice(0, 1);
 
   return (
     <>
@@ -596,7 +610,16 @@ export function DaftarPustaka() {
         <h1 className="hero-subpage-title">Daftar Pustaka</h1>
       </section>
       <main className="main-content">
-        <ExternalLinkSection links={links} />
+        <div className="slide-container">
+          {imageList.map((img, idx) => (
+            <img
+              key={img.id || idx}
+              src={img.url}
+              alt={img.alt || 'Daftar Pustaka'}
+              className="slide-img"
+            />
+          ))}
+        </div>
 
         <div className="btn-back-wrap">
           <Link to="/" className="btn-pill">

@@ -66,17 +66,9 @@ export const DEFAULT_SITE_CONTENTS = {
     images: [
       {
         id: 1,
-        url: '/assets/images/content-petunjuk.png',
+        url: '/assets/images/purun-content-petunjuk.jpg',
         alt: 'Petunjuk Penggunaan Media Pembelajaran'
       }
-    ],
-    intro: 'LANGKAH-LANGKAH PEMBELAJARAN YANG PERLU KALIAN IKUTI ADALAH SEBAGUT BERIKUT:',
-    items: [
-      'Bacalah tujuan pembelajaran agar kalian memahami kompetensi yang akan dicapai.',
-      'Pelajari bahan bacaan sesuai dengan materi yang sedang dipelajari.',
-      'Tonton video pembelajaran untuk memperdalam pemahaman terhadap materi.',
-      'Selanjutnya, kerjakan tugas pada bagian Ayo Berlatih dengan sungguh-sungguh.',
-      'Apabila masih belum memahami materi, kalian dapat membaca ulang bahan bacaan atau menonton kembali video pembelajaran.'
     ]
   },
   tujuan: {
@@ -86,12 +78,6 @@ export const DEFAULT_SITE_CONTENTS = {
         url: '/assets/images/content-tujuan.png',
         alt: 'Tujuan Pembelajaran'
       }
-    ],
-    intro: '',
-    items: [
-      'Peserta didik mampu mengidentifikasi berbagai bentuk bangun datar.',
-      'Peserta didik dapat menghitung keliling dan luas bangun datar sederhana.',
-      'Peserta didik mampu menghubungkan materi bangun datar dengan kearifan lokal Kalimantan Selatan.'
     ]
   },
   bahan_bacaan: {
@@ -111,6 +97,15 @@ export const DEFAULT_SITE_CONTENTS = {
         id: 3,
         url: '/assets/images/content-bahan-3.png',
         alt: 'Rumus Luas dan Keliling Bangun Datar'
+      }
+    ]
+  },
+  daftar_pustaka: {
+    images: [
+      {
+        id: 1,
+        url: '/assets/images/thumb-sibi.jpg',
+        alt: 'Daftar Pustaka'
       }
     ]
   },
