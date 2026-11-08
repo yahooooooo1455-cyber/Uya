@@ -146,9 +146,23 @@ export function Petunjuk() {
 
   useEffect(() => {
     fetchSiteContent('petunjuk').then((res) => {
-      if (res) setData(res);
+      if (res) {
+        if (!Array.isArray(res.images) || res.images.length === 0) {
+          setData({
+            ...res,
+            images: DEFAULT_SITE_CONTENTS.petunjuk.images
+          });
+        } else {
+          setData(res);
+        }
+      }
     });
   }, []);
+
+  const imageList =
+    Array.isArray(data?.images) && data.images.length > 0
+      ? data.images
+      : DEFAULT_SITE_CONTENTS.petunjuk.images;
 
   return (
     <>
@@ -157,11 +171,14 @@ export function Petunjuk() {
       </section>
       <main className="main-content">
         <div className="slide-container">
-          <KearifanTextBoard
-            badgeTitle="Petunjuk"
-            intro={data.intro}
-            items={data.items || []}
-          />
+          {imageList.map((img, idx) => (
+            <img
+              key={img.id || idx}
+              src={img.url}
+              alt={img.alt || `Petunjuk ${idx + 1}`}
+              className="slide-img"
+            />
+          ))}
         </div>
         <div className="btn-back-wrap">
           <Link to="/" className="btn-pill">
@@ -178,9 +195,23 @@ export function TujuanPembelajaran() {
 
   useEffect(() => {
     fetchSiteContent('tujuan').then((res) => {
-      if (res) setData(res);
+      if (res) {
+        if (!Array.isArray(res.images) || res.images.length === 0) {
+          setData({
+            ...res,
+            images: DEFAULT_SITE_CONTENTS.tujuan.images
+          });
+        } else {
+          setData(res);
+        }
+      }
     });
   }, []);
+
+  const imageList =
+    Array.isArray(data?.images) && data.images.length > 0
+      ? data.images
+      : DEFAULT_SITE_CONTENTS.tujuan.images;
 
   return (
     <>
@@ -189,11 +220,14 @@ export function TujuanPembelajaran() {
       </section>
       <main className="main-content">
         <div className="slide-container">
-          <KearifanTextBoard
-            badgeTitle="Tujuan Pembelajaran"
-            intro={data.intro}
-            items={data.items || []}
-          />
+          {imageList.map((img, idx) => (
+            <img
+              key={img.id || idx}
+              src={img.url}
+              alt={img.alt || `Tujuan Pembelajaran ${idx + 1}`}
+              className="slide-img"
+            />
+          ))}
         </div>
         <div className="btn-back-wrap">
           <Link to="/" className="btn-pill">

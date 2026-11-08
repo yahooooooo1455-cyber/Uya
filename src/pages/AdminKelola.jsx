@@ -28,17 +28,11 @@ export default function AdminKelola() {
   const [savingMsg, setSavingMsg] = useState('');
   const [uploading, setUploading] = useState(false);
 
-  // 1. State Petunjuk (Hanya Kolom Tulisan)
-  const [petunjukIntro, setPetunjukIntro] = useState(DEFAULT_SITE_CONTENTS.petunjuk.intro);
-  const [petunjukLines, setPetunjukLines] = useState(
-    DEFAULT_SITE_CONTENTS.petunjuk.items.join('\n')
-  );
+  // 1. State Petunjuk (Upload Foto)
+  const [petunjukData, setPetunjukData] = useState(DEFAULT_SITE_CONTENTS.petunjuk);
 
-  // 2. State Tujuan Pembelajaran (Hanya Kolom Tulisan)
-  const [tujuanIntro, setTujuanIntro] = useState(DEFAULT_SITE_CONTENTS.tujuan.intro);
-  const [tujuanLines, setTujuanLines] = useState(
-    DEFAULT_SITE_CONTENTS.tujuan.items.join('\n')
-  );
+  // 2. State Tujuan Pembelajaran (Upload Foto)
+  const [tujuanData, setTujuanData] = useState(DEFAULT_SITE_CONTENTS.tujuan);
 
   // 3. State Bahan Bacaan (Upload Foto Slide Canva + Toggle Simulasi)
   const [bahanData, setBahanData] = useState(DEFAULT_SITE_CONTENTS.bahan_bacaan);
@@ -89,12 +83,22 @@ export default function AdminKelola() {
     ]);
 
     if (p) {
-      setPetunjukIntro(p.intro || '');
-      setPetunjukLines((p.items || []).join('\n'));
+      setPetunjukData({
+        ...p,
+        images:
+          Array.isArray(p.images) && p.images.length > 0
+            ? p.images
+            : DEFAULT_SITE_CONTENTS.petunjuk.images
+      });
     }
     if (t) {
-      setTujuanIntro(t.intro || '');
-      setTujuanLines((t.items || []).join('\n'));
+      setTujuanData({
+        ...t,
+        images:
+          Array.isArray(t.images) && t.images.length > 0
+            ? t.images
+            : DEFAULT_SITE_CONTENTS.tujuan.images
+      });
     }
     if (b) setBahanData(b);
     if (pen) setPenyusunData(pen);
@@ -114,32 +118,74 @@ export default function AdminKelola() {
 
   // ==================== HANDLERS PER MENU ====================
 
-  // 1. Simpan Petunjuk (Kolom Tulisan)
-  const handleSavePetunjuk = async (e) => {
-    e.preventDefault();
-    const items = petunjukLines
-      .split('\n')
-      .map((s) => s.trim())
-      .filter(Boolean);
-    await saveSiteContent('petunjuk', {
-      intro: petunjukIntro.trim(),
-      items
-    });
-    showToast('✓ Tulisan Petunjuk berhasil diperbarui!');
+  // 1. Upload Foto Petunjuk
+  const handleUploadPetunjukImage = async (e, replaceAll = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploading(true);
+      const res = await uploadImageToCloudinary(file);
+      const newImg = {
+        id: Date.now(),
+        url: res.url,
+        alt: file.name || 'Petunjuk Pembelajaran'
+      };
+      const nextImages = replaceAll
+        ? [newImg]
+        : [...(petunjukData.images || []), newImg];
+      const updated = { ...petunjukData, images: nextImages };
+      setPetunjukData(updated);
+      await saveSiteContent('petunjuk', updated);
+      showToast('✓ Gambar Petunjuk berhasil diunggah!');
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   };
 
-  // 2. Simpan Tujuan Pembelajaran (Kolom Tulisan)
-  const handleSaveTujuan = async (e) => {
-    e.preventDefault();
-    const items = tujuanLines
-      .split('\n')
-      .map((s) => s.trim())
-      .filter(Boolean);
-    await saveSiteContent('tujuan', {
-      intro: tujuanIntro.trim(),
-      items
-    });
-    showToast('✓ Tulisan Tujuan Pembelajaran berhasil diperbarui!');
+  const handleDeletePetunjukImage = async (id) => {
+    const nextImages = (petunjukData.images || []).filter((img) => img.id !== id);
+    const updated = { ...petunjukData, images: nextImages };
+    setPetunjukData(updated);
+    await saveSiteContent('petunjuk', updated);
+    showToast('✓ Gambar Petunjuk dihapus.');
+  };
+
+  // 2. Upload Foto Tujuan Pembelajaran
+  const handleUploadTujuanImage = async (e, replaceAll = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploading(true);
+      const res = await uploadImageToCloudinary(file);
+      const newImg = {
+        id: Date.now(),
+        url: res.url,
+        alt: file.name || 'Tujuan Pembelajaran'
+      };
+      const nextImages = replaceAll
+        ? [newImg]
+        : [...(tujuanData.images || []), newImg];
+      const updated = { ...tujuanData, images: nextImages };
+      setTujuanData(updated);
+      await saveSiteContent('tujuan', updated);
+      showToast('✓ Gambar Tujuan Pembelajaran berhasil diunggah!');
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteTujuanImage = async (id) => {
+    const nextImages = (tujuanData.images || []).filter((img) => img.id !== id);
+    const updated = { ...tujuanData, images: nextImages };
+    setTujuanData(updated);
+    await saveSiteContent('tujuan', updated);
+    showToast('✓ Gambar Tujuan Pembelajaran dihapus.');
   };
 
   // 3. Upload Foto Bahan Bacaan (Canva Slide)
@@ -345,13 +391,13 @@ export default function AdminKelola() {
             className={`admin-tab-btn ${activeTab === 'petunjuk' ? 'active' : ''}`}
             onClick={() => setActiveTab('petunjuk')}
           >
-            1. 📝 Petunjuk (Tulisan)
+            1. 🖼️ Petunjuk (Upload Foto)
           </button>
           <button
             className={`admin-tab-btn ${activeTab === 'tujuan' ? 'active' : ''}`}
             onClick={() => setActiveTab('tujuan')}
           >
-            2. 🎯 Tujuan Pembelajaran (Tulisan)
+            2. 🎯 Tujuan Pembelajaran (Upload Foto)
           </button>
           <button
             className={`admin-tab-btn ${activeTab === 'bahan' ? 'active' : ''}`}
@@ -391,136 +437,160 @@ export default function AdminKelola() {
           </button>
         </div>
 
-        {/* ==================== 1. TAB PETUNJUK (HANYA KOLOM TULISAN) ==================== */}
+        {/* ==================== 1. TAB PETUNJUK (UPLOAD FOTO) ==================== */}
         {activeTab === 'petunjuk' && (
           <section className="interactive-panel" style={{ marginTop: 0 }}>
-            <h2 className="panel-title">📝 Edit Tulisan Halaman Petunjuk</h2>
+            <h2 className="panel-title">🖼️ Upload Gambar Halaman Petunjuk</h2>
             <p className="panel-subtitle">
-              Cukup ubah tulisan di bawah ini (tanpa perlu upload foto). Tulisan akan otomatis
-              tampil di kotak tengah halaman{' '}
+              Unggah gambar desain Petunjuk (misalnya dari Canva). Gambar otomatis tampil di halaman{' '}
               <Link to="/petunjuk" style={{ color: 'var(--primary)', fontWeight: 800 }}>
                 Petunjuk Siswa ↗
               </Link>
               .
             </p>
 
-            <form onSubmit={handleSavePetunjuk} className="add-link-card">
-              <div className="form-group">
-                <label>Kalimat Pengantar Atas (Di Dalam Kotak Tengah)</label>
-                <input
-                  type="text"
-                  value={petunjukIntro}
-                  onChange={(e) => setPetunjukIntro(e.target.value)}
-                  placeholder="LANGKAH-LANGKAH PEMBELAJARAN YANG PERLU KALIAN IKUTI ADALAH SEBAGAI BERIKUT:"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>
-                  Isi Langkah-Langkah Petunjuk (Tulis 1 baris untuk setiap nomor 1, 2, 3, dst.) *
-                </label>
-                <textarea
-                  rows={7}
-                  required
-                  value={petunjukLines}
-                  onChange={(e) => setPetunjukLines(e.target.value)}
-                  placeholder="Ketik setiap poin di baris baru..."
-                />
-              </div>
-
-              <button type="submit" className="btn-sm">
-                💾 Simpan Tulisan Petunjuk
-              </button>
-            </form>
-
-            {/* PREVIEW LANGSUNG KOTAK TENGAH */}
-            <div style={{ marginTop: '24px' }}>
-              <h4 style={{ marginBottom: '10px', color: '#555' }}>
-                👀 Preview Tampilan Kotak Tengah di Halaman Siswa:
-              </h4>
-              <div className="kearifan-board">
-                <div className="kearifan-board-badge">Petunjuk</div>
-                <div className="kearifan-board-orange-box">
-                  {petunjukIntro && (
-                    <div className="kearifan-board-intro">{petunjukIntro}</div>
-                  )}
-                  <ol className="kearifan-board-list">
-                    {petunjukLines
-                      .split('\n')
-                      .map((s) => s.trim())
-                      .filter(Boolean)
-                      .map((line, i) => (
-                        <li key={i}>{line}</li>
-                      ))}
-                  </ol>
+            <div className="add-link-card" style={{ marginBottom: '24px' }}>
+              <div className="form-grid-2">
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>🔄 Ganti Gambar Petunjuk Utama</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploading}
+                    onChange={(e) => handleUploadPetunjukImage(e, true)}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>➕ Tambah Gambar Petunjuk Tambahan</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploading}
+                    onChange={(e) => handleUploadPetunjukImage(e, false)}
+                  />
                 </div>
               </div>
+              {uploading && (
+                <div style={{ marginTop: '10px', color: 'var(--primary)', fontWeight: 700 }}>
+                  ⏳ Sedang mengunggah gambar ke Cloudinary...
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'grid', gap: '18px' }}>
+              {(petunjukData.images || []).map((img, idx) => (
+                <div
+                  key={img.id || idx}
+                  style={{
+                    background: '#fff',
+                    padding: '16px',
+                    borderRadius: '14px',
+                    boxShadow: 'var(--shadow-sm)'
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '12px'
+                    }}
+                  >
+                    <strong>Gambar Petunjuk #{idx + 1}</strong>
+                    <button
+                      type="button"
+                      className="btn-sm btn-danger"
+                      onClick={() => handleDeletePetunjukImage(img.id)}
+                    >
+                      🗑 Hapus Gambar Ini
+                    </button>
+                  </div>
+                  <img
+                    src={img.url}
+                    alt={img.alt || 'Petunjuk'}
+                    style={{ width: '100%', maxHeight: '420px', objectFit: 'contain', borderRadius: '10px' }}
+                  />
+                </div>
+              ))}
             </div>
           </section>
         )}
 
-        {/* ==================== 2. TAB TUJUAN PEMBELAJARAN (HANYA KOLOM TULISAN) ==================== */}
+        {/* ==================== 2. TAB TUJUAN PEMBELAJARAN (UPLOAD FOTO) ==================== */}
         {activeTab === 'tujuan' && (
           <section className="interactive-panel" style={{ marginTop: 0 }}>
-            <h2 className="panel-title">🎯 Edit Tulisan Tujuan Pembelajaran</h2>
+            <h2 className="panel-title">🎯 Upload Gambar Tujuan Pembelajaran</h2>
             <p className="panel-subtitle">
-              Sama seperti Petunjuk, cukup ubah tulisan poin-poin Tujuan Pembelajaran di bawah ini
-              (tanpa perlu upload foto). Hasilnya langsung tampil di halaman{' '}
+              Unggah gambar desain Tujuan Pembelajaran (misalnya dari Canva). Gambar otomatis tampil di halaman{' '}
               <Link to="/tujuan-pembelajaran" style={{ color: 'var(--primary)', fontWeight: 800 }}>
                 Tujuan Pembelajaran Siswa ↗
               </Link>
               .
             </p>
 
-            <form onSubmit={handleSaveTujuan} className="add-link-card">
-              <div className="form-group">
-                <label>Kalimat Pengantar (Opsional — Kosongkan jika langsung nomor 1)</label>
-                <input
-                  type="text"
-                  value={tujuanIntro}
-                  onChange={(e) => setTujuanIntro(e.target.value)}
-                  placeholder="Contoh: Setelah mengikuti pembelajaran ini, diharapkan:"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>
-                  Daftar Poin Tujuan Pembelajaran (Tulis 1 baris untuk setiap nomor 1, 2, 3, dst.) *
-                </label>
-                <textarea
-                  rows={6}
-                  required
-                  value={tujuanLines}
-                  onChange={(e) => setTujuanLines(e.target.value)}
-                  placeholder="Ketik setiap poin tujuan pembelajaran di baris baru..."
-                />
-              </div>
-
-              <button type="submit" className="btn-sm">
-                💾 Simpan Tulisan Tujuan Pembelajaran
-              </button>
-            </form>
-
-            {/* PREVIEW LANGSUNG KOTAK TENGAH */}
-            <div style={{ marginTop: '24px' }}>
-              <h4 style={{ marginBottom: '10px', color: '#555' }}>
-                👀 Preview Tampilan Kotak Tengah di Halaman Siswa:
-              </h4>
-              <div className="kearifan-board">
-                <div className="kearifan-board-badge">Tujuan Pembelajaran</div>
-                <div className="kearifan-board-orange-box">
-                  {tujuanIntro && <div className="kearifan-board-intro">{tujuanIntro}</div>}
-                  <ol className="kearifan-board-list">
-                    {tujuanLines
-                      .split('\n')
-                      .map((s) => s.trim())
-                      .filter(Boolean)
-                      .map((line, i) => (
-                        <li key={i}>{line}</li>
-                      ))}
-                  </ol>
+            <div className="add-link-card" style={{ marginBottom: '24px' }}>
+              <div className="form-grid-2">
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>🔄 Ganti Gambar Tujuan Pembelajaran Utama</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploading}
+                    onChange={(e) => handleUploadTujuanImage(e, true)}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>➕ Tambah Gambar Tujuan Pembelajaran Tambahan</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploading}
+                    onChange={(e) => handleUploadTujuanImage(e, false)}
+                  />
                 </div>
               </div>
+              {uploading && (
+                <div style={{ marginTop: '10px', color: 'var(--primary)', fontWeight: 700 }}>
+                  ⏳ Sedang mengunggah gambar ke Cloudinary...
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'grid', gap: '18px' }}>
+              {(tujuanData.images || []).map((img, idx) => (
+                <div
+                  key={img.id || idx}
+                  style={{
+                    background: '#fff',
+                    padding: '16px',
+                    borderRadius: '14px',
+                    boxShadow: 'var(--shadow-sm)'
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '12px'
+                    }}
+                  >
+                    <strong>Gambar Tujuan Pembelajaran #{idx + 1}</strong>
+                    <button
+                      type="button"
+                      className="btn-sm btn-danger"
+                      onClick={() => handleDeleteTujuanImage(img.id)}
+                    >
+                      🗑 Hapus Gambar Ini
+                    </button>
+                  </div>
+                  <img
+                    src={img.url}
+                    alt={img.alt || 'Tujuan Pembelajaran'}
+                    style={{ width: '100%', maxHeight: '420px', objectFit: 'contain', borderRadius: '10px' }}
+                  />
+                </div>
+              ))}
             </div>
           </section>
         )}

@@ -63,7 +63,14 @@ export const SITE_PAGES = [
 
 export const DEFAULT_SITE_CONTENTS = {
   petunjuk: {
-    intro: 'LANGKAH-LANGKAH PEMBELAJARAN YANG PERLU KALIAN IKUTI ADALAH SEBAGAI BERIKUT:',
+    images: [
+      {
+        id: 1,
+        url: '/assets/images/content-petunjuk.png',
+        alt: 'Petunjuk Penggunaan Media Pembelajaran'
+      }
+    ],
+    intro: 'LANGKAH-LANGKAH PEMBELAJARAN YANG PERLU KALIAN IKUTI ADALAH SEBAGUT BERIKUT:',
     items: [
       'Bacalah tujuan pembelajaran agar kalian memahami kompetensi yang akan dicapai.',
       'Pelajari bahan bacaan sesuai dengan materi yang sedang dipelajari.',
@@ -73,6 +80,13 @@ export const DEFAULT_SITE_CONTENTS = {
     ]
   },
   tujuan: {
+    images: [
+      {
+        id: 1,
+        url: '/assets/images/content-tujuan.png',
+        alt: 'Tujuan Pembelajaran'
+      }
+    ],
     intro: '',
     items: [
       'Peserta didik mampu mengidentifikasi berbagai bentuk bangun datar.',
