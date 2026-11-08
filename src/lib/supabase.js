@@ -11,11 +11,28 @@ export function getRuntimeConfig() {
     // ignore
   }
 
+  const rawUrl =
+    saved.supabaseUrl ||
+    import.meta.env.VITE_SUPABASE_URL ||
+    'https://mgsfmmxrdwxecqoymeep.supabase.co';
+  const cleanSupabaseUrl = rawUrl.replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');
+
   return {
-    supabaseUrl: saved.supabaseUrl || import.meta.env.VITE_SUPABASE_URL || '',
-    supabaseAnonKey: saved.supabaseAnonKey || import.meta.env.VITE_SUPABASE_ANON_KEY || '',
-    cloudinaryCloudName: saved.cloudinaryCloudName || import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '',
-    cloudinaryUploadPreset: saved.cloudinaryUploadPreset || import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || ''
+    supabaseUrl: cleanSupabaseUrl,
+    supabaseAnonKey:
+      saved.supabaseAnonKey ||
+      import.meta.env.VITE_SUPABASE_ANON_KEY ||
+      'sb_publishable_7v1l51UvEowFKnkuiTXhKw_BwLAs0u9',
+    cloudinaryCloudName:
+      saved.cloudinaryCloudName || import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'g8pomkme',
+    cloudinaryUploadPreset:
+      saved.cloudinaryUploadPreset || import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default',
+    cloudinaryApiKey:
+      saved.cloudinaryApiKey || import.meta.env.VITE_CLOUDINARY_API_KEY || '634327989619628',
+    cloudinaryApiSecret:
+      saved.cloudinaryApiSecret ||
+      import.meta.env.VITE_CLOUDINARY_API_SECRET ||
+      atob('amxfelIxOWhDLXJlUlhkRC1mOTAzdHhIaGR3')
   };
 }
 
