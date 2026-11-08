@@ -139,56 +139,16 @@ export default function Layout({ children }) {
                       to="/video-pembelajaran"
                       className={`nav-link ${isVideoGroup ? 'active' : ''}`}
                     >
-                      Video Pembelajaran <span className="caret">▼</span>
+                      Video Pembelajaran
                     </Link>
-                    <ul className="dropdown-menu">
-                      <li>
-                        <Link
-                          to="/video-pembelajaran-1"
-                          className={`dropdown-link ${
-                            isActive('/video-pembelajaran-1') ? 'active' : ''
-                          }`}
-                        >
-                          Video Pembelajaran 1
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          to="/video-pembelajaran-2"
-                          className={`dropdown-link ${
-                            isActive('/video-pembelajaran-2') ? 'active' : ''
-                          }`}
-                        >
-                          Video Pembelajaran 2
-                        </Link>
-                      </li>
-                    </ul>
                   </li>
                   <li className="nav-item">
                     <Link
                       to="/ayo-berlatih"
                       className={`nav-link ${isLatihanGroup ? 'active' : ''}`}
                     >
-                      Ayo Berlatih <span className="caret">▼</span>
+                      Ayo Berlatih
                     </Link>
-                    <ul className="dropdown-menu">
-                      <li>
-                        <Link
-                          to="/pilihan-ganda"
-                          className={`dropdown-link ${isActive('/pilihan-ganda') ? 'active' : ''}`}
-                        >
-                          Pilihan Ganda
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          to="/isian"
-                          className={`dropdown-link ${isActive('/isian') ? 'active' : ''}`}
-                        >
-                          Isian
-                        </Link>
-                      </li>
-                    </ul>
                   </li>
                   <li className="nav-item">
                     <Link
@@ -314,54 +274,18 @@ export default function Layout({ children }) {
           <li>
             <Link
               to="/video-pembelajaran"
-              className={`drawer-link ${isActive('/video-pembelajaran') ? 'active' : ''}`}
+              className={`drawer-link ${isVideoGroup ? 'active' : ''}`}
             >
               Video Pembelajaran
             </Link>
-            <ul className="drawer-sublist">
-              <li>
-                <Link
-                  to="/video-pembelajaran-1"
-                  className={`drawer-link ${isActive('/video-pembelajaran-1') ? 'active' : ''}`}
-                >
-                  ↳ Video Pembelajaran 1
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/video-pembelajaran-2"
-                  className={`drawer-link ${isActive('/video-pembelajaran-2') ? 'active' : ''}`}
-                >
-                  ↳ Video Pembelajaran 2
-                </Link>
-              </li>
-            </ul>
           </li>
           <li>
             <Link
               to="/ayo-berlatih"
-              className={`drawer-link ${isActive('/ayo-berlatih') ? 'active' : ''}`}
+              className={`drawer-link ${isLatihanGroup ? 'active' : ''}`}
             >
               Ayo Berlatih
             </Link>
-            <ul className="drawer-sublist">
-              <li>
-                <Link
-                  to="/pilihan-ganda"
-                  className={`drawer-link ${isActive('/pilihan-ganda') ? 'active' : ''}`}
-                >
-                  ↳ Pilihan Ganda
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/isian"
-                  className={`drawer-link ${isActive('/isian') ? 'active' : ''}`}
-                >
-                  ↳ Isian
-                </Link>
-              </li>
-            </ul>
           </li>
           <li>
             <Link

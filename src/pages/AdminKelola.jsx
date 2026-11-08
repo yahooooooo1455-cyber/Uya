@@ -774,27 +774,15 @@ export default function AdminKelola() {
               className="add-link-card"
               style={{ marginBottom: '24px' }}
             >
-              <div className="form-grid-2">
-                <div className="form-group">
-                  <label>Pilih Halaman Latihan *</label>
-                  <select
-                    value={latCategory}
-                    onChange={(e) => setLatCategory(e.target.value)}
-                  >
-                    <option value="pilihan-ganda">Pilihan Ganda</option>
-                    <option value="isian">Isian</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Judul Kartu Soal *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Contoh: Soal Pilihan Ganda Matematika"
-                    value={latTitle}
-                    onChange={(e) => setLatTitle(e.target.value)}
-                  />
-                </div>
+              <div className="form-group">
+                <label>Judul Kartu Soal / Permainan *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: Ayo Bermain — Soal Pilihan Ganda Matematika"
+                  value={latTitle}
+                  onChange={(e) => setLatTitle(e.target.value)}
+                />
               </div>
 
               <div className="form-group">
