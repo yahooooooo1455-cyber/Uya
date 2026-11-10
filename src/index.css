@@ -43,6 +43,10 @@ body,
 }
 
 /* ==================== SEMBUNYIKAN BADGE / DRAWER NETLIFY ==================== */
+#nl-badge-frame,
+iframe#nl-badge-frame,
+iframe[title*="Netlify"],
+iframe[title*="Powered by Netlify"],
 #netlify-badge,
 .netlify-badge,
 [data-netlify-badge],
@@ -52,6 +56,11 @@ netlify-drawer {
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  z-index: -9999 !important;
 }
 
 /* ==================== TOP NAVBAR (GOOGLE SITES BLUE/WHITE STYLE) ==================== */
