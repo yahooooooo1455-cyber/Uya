@@ -263,16 +263,7 @@ export function BahanBacaan() {
       </section>
       <main className="main-content">
         {links.length > 0 ? (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                links.length === 1 ? '1fr' : 'repeat(auto-fit, minmax(360px, 1fr))',
-              gap: '28px',
-              maxWidth: '1080px',
-              margin: '0 auto'
-            }}
-          >
+          <div className="video-grid-responsive">
             {links.map((item) => {
               const embedSrc = getDirectEmbedUrl(item.url);
               return (

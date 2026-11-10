@@ -90,15 +90,16 @@ export default function Layout({ children }) {
                 />
               </div>
               <span className="brand-title">
-                {isGuruRoute ? '👩‍🏫 Portal Guru — Matematika Kelas 3' : 'Matematika Kelas 3'}
+                {isGuruRoute ? '👩‍🏫 Portal Guru' : 'Matematika Kelas 3'}
               </span>
             </Link>
           </div>
 
           {isGuruRoute ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Link to="/" className="btn-sm" style={{ textDecoration: 'none' }}>
-                👦 Lihat Tampilan Siswa (Anak SD)
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link to="/" className="btn-sm nav-switch-btn" style={{ textDecoration: 'none' }}>
+                <span className="btn-desktop-text">👦 Lihat Tampilan Siswa</span>
+                <span className="btn-mobile-text">👦 Siswa</span>
               </Link>
             </div>
           ) : (

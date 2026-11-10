@@ -2,12 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { QRCodeCanvas } from 'qrcode.react';
 import {
-  getRuntimeConfig,
-  saveRuntimeConfig,
-  isSupabaseConfigured
-} from '../lib/supabase';
-import {
-  isCloudinaryConfigured,
   uploadImageToCloudinary
 } from '../lib/cloudinary';
 import {
@@ -19,7 +13,6 @@ import {
   fetchVideos,
   addVideo,
   deleteVideo,
-  syncLocalDataToSupabase,
   convertYouTubeToEmbed,
   getYouTubeThumbnail
 } from '../lib/dataService';
@@ -65,9 +58,6 @@ export default function AdminKelola() {
 
   // 7. State Penyusun (Upload Foto Saja)
   const [penyusunData, setPenyusunData] = useState(DEFAULT_SITE_CONTENTS.penyusun);
-
-  // 8. State Konfigurasi Cloud
-  const [config, setConfig] = useState(getRuntimeConfig());
 
   const showToast = (msg) => {
     setSavingMsg(msg);
@@ -351,19 +341,10 @@ export default function AdminKelola() {
         {/* BANNER STATUS PENYIMPANAN */}
         <div className="cloud-banner">
           <div>
-            <strong>Mode Halaman Guru (Terpisah dari Siswa SD)</strong>
+            <strong>Mode Portal Guru (Khusus Pengajar)</strong>
             <div style={{ fontSize: '0.86rem', color: '#555', marginTop: '2px' }}>
-              Siswa SD hanya melihat tampilan materi yang bersih. Perubahan di halaman ini langsung
-              mengubah tampilan di halaman siswa.
+              Seluruh perubahan link, materi, atau gambar yang diunggah di sini otomatis tersimpan dan langsung tampil di halaman siswa.
             </div>
-          </div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <span className="status-pill">
-              {isSupabaseConfigured() ? '🟢 Supabase Aktif' : '🟡 Mode Lokal'}
-            </span>
-            <span className="status-pill">
-              {isCloudinaryConfigured() ? '🟢 Cloudinary Aktif' : '🟡 Upload Lokal'}
-            </span>
           </div>
         </div>
 
@@ -426,12 +407,6 @@ export default function AdminKelola() {
             onClick={() => setActiveTab('penyusun')}
           >
             7. 👥 Penyusun (Upload Foto)
-          </button>
-          <button
-            className={`admin-tab-btn ${activeTab === 'cloud' ? 'active' : ''}`}
-            onClick={() => setActiveTab('cloud')}
-          >
-            🔑 Kunci Cloud
           </button>
         </div>
 
@@ -1087,97 +1062,6 @@ export default function AdminKelola() {
                 />
               </div>
             )}
-          </section>
-        )}
-
-        {/* ==================== 8. TAB KUNCI CLOUD (SUPABASE & CLOUDINARY) ==================== */}
-        {activeTab === 'cloud' && (
-          <section className="interactive-panel" style={{ marginTop: 0 }}>
-            <h2 className="panel-title">🔑 Koneksi Supabase, Cloudinary &amp; Netlify</h2>
-            <p className="panel-subtitle">
-              Masukkan kunci API Supabase &amp; Cloudinary di bawah ini agar seluruh perubahan Guru
-              tersimpan secara online untuk semua siswa.
-            </p>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                saveRuntimeConfig(config);
-                showToast('✓ Kunci Supabase & Cloudinary berhasil disimpan!');
-                loadAllData();
-              }}
-              className="add-link-card"
-            >
-              <div className="form-grid-2">
-                <div className="form-group">
-                  <label>VITE_SUPABASE_URL</label>
-                  <input
-                    type="text"
-                    placeholder="https://xyzcompany.supabase.co"
-                    value={config.supabaseUrl}
-                    onChange={(e) => setConfig({ ...config, supabaseUrl: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>VITE_SUPABASE_ANON_KEY</label>
-                  <input
-                    type="text"
-                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    value={config.supabaseAnonKey}
-                    onChange={(e) => setConfig({ ...config, supabaseAnonKey: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="form-grid-2">
-                <div className="form-group">
-                  <label>VITE_CLOUDINARY_CLOUD_NAME</label>
-                  <input
-                    type="text"
-                    placeholder="Contoh: dxyz123abc"
-                    value={config.cloudinaryCloudName}
-                    onChange={(e) =>
-                      setConfig({ ...config, cloudinaryCloudName: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="form-group">
-                  <label>VITE_CLOUDINARY_UPLOAD_PRESET (Unsigned)</label>
-                  <input
-                    type="text"
-                    placeholder="Contoh: preset_unsigned_kamu"
-                    value={config.cloudinaryUploadPreset}
-                    onChange={(e) =>
-                      setConfig({ ...config, cloudinaryUploadPreset: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <button type="submit" className="btn-sm">
-                  💾 Simpan Kunci Cloud
-                </button>
-                <button
-                  type="button"
-                  className="btn-sm btn-outline"
-                  onClick={async () => {
-                    try {
-                      saveRuntimeConfig(config);
-                      await syncLocalDataToSupabase();
-                      await loadAllData();
-                      showToast(
-                        '✓ Berhasil! Seluruh konten Petunjuk, Tujuan, Bahan Bacaan, Video, Link & QR sudah tersinkron ke Supabase!'
-                      );
-                    } catch (err) {
-                      alert(err.message);
-                    }
-                  }}
-                >
-                  ☁️ Sinkronkan Semua Data ke Supabase (1-Klik)
-                </button>
-              </div>
-            </form>
           </section>
         )}
       </main>

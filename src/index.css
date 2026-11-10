@@ -1314,6 +1314,22 @@ netlify-drawer {
   color: #fff;
 }
 
+.btn-mobile-text {
+  display: none;
+}
+
+.btn-desktop-text {
+  display: inline;
+}
+
+.video-grid-responsive {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 26px;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 1320px) {
   .nav-link {
@@ -1344,21 +1360,202 @@ netlify-drawer {
   }
 }
 
+@media (max-width: 768px) {
+  .admin-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .admin-tab-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 8px 14px;
+    font-size: 0.84rem;
+  }
+}
+
 @media (max-width: 640px) {
-  .menu-grid-3,
-  .menu-grid-2,
-  .mc-options,
-  .form-grid-2 {
-    grid-template-columns: 1fr;
+  .btn-desktop-text {
+    display: none;
+  }
+  .btn-mobile-text {
+    display: inline;
+  }
+
+  /* Nav Header on HP */
+  .site-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .nav-container {
+    padding: 0 10px;
+    min-height: 56px;
+    gap: 6px;
+  }
+  .nav-left-group {
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+  }
+  .brand {
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .brand-logos {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .brand-logo {
+    height: 26px;
+  }
+  .brand-logo-wide {
+    height: 20px;
+  }
+  .brand-title {
+    font-size: 0.82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 135px;
+  }
+  .nav-switch-btn {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  /* Main Container on HP */
+  .main-content {
+    padding: 20px 12px 36px;
+  }
+
+  /* Hero Banners on HP */
+  .hero-home {
+    min-height: 200px;
+    padding: 16px 12px;
+  }
+  .hero-home-inner {
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   }
   .hero-subpage {
-    min-height: 220px;
+    min-height: 140px;
+    padding: 28px 12px;
   }
-  .main-content {
-    padding: 28px 16px 44px;
+  .hero-subpage-title {
+    font-size: clamp(1.8rem, 7vw, 2.4rem);
+    letter-spacing: 0.5px;
   }
-  .live-qr-preview {
-    flex-direction: column;
-    text-align: center;
+
+  /* Home Menu Cards on HP (2 Kolom Rapi Seperti Aplikasi Belajar) */
+  .menu-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .menu-grid-1 {
+    max-width: 220px;
+    margin: 0 auto 20px;
+  }
+  .menu-card {
+    gap: 8px;
+  }
+  .menu-card-img-link {
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-pill {
+    padding: 8px 14px;
+    font-size: 0.88rem;
+    max-width: 100%;
+    box-shadow: 0 2px 8px rgba(30, 108, 147, 0.2);
+  }
+
+  /* Responsive Video & Bahan Bacaan Grid */
+  .video-grid-responsive {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  /* Slide Img on HP */
+  .slide-container {
+    gap: 16px;
+  }
+  .slide-img {
+    border-radius: 12px;
+  }
+
+  /* Form & Interactive Panel */
+  .form-grid-2,
+  .mc-options {
+    grid-template-columns: 1fr;
+  }
+  .interactive-panel {
+    padding: 18px 14px;
+    margin-top: 20px;
+    border-radius: 14px;
+  }
+  .panel-title {
+    font-size: 1.25rem;
+  }
+  .panel-subtitle {
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+  }
+  .add-link-card {
+    padding: 16px 14px;
+    border-radius: 12px;
+  }
+  .cloud-banner {
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+
+  /* External Cards & QR */
+  .external-card {
+    border-radius: 14px;
+    margin-bottom: 14px;
+  }
+  .external-card-body {
+    padding: 16px 14px;
+  }
+  .external-card-title {
+    font-size: 1.05rem;
+  }
+  .external-card-desc {
+    font-size: 0.88rem;
+  }
+  .qr-box {
+    max-width: 230px;
+    padding: 16px 12px;
+  }
+  .qr-caption {
+    font-size: 1.15rem;
+  }
+
+  /* Footer */
+  .site-footer {
+    padding: 20px 14px;
+    font-size: 0.84rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .menu-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    max-width: 250px;
+    margin: 0 auto 20px;
+  }
+  .brand-title {
+    display: none;
   }
 }

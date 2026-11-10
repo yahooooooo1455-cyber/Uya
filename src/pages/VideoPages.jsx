@@ -17,16 +17,7 @@ export function VideoPembelajaranMenu() {
       </section>
 
       <main className="main-content">
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              videos.length === 1 ? '1fr' : 'repeat(auto-fit, minmax(360px, 1fr))',
-            gap: '28px',
-            maxWidth: '1080px',
-            margin: '0 auto'
-          }}
-        >
+        <div className="video-grid-responsive">
           {videos.map((vid) => {
             const embedSrc = vid.embed_url || convertYouTubeToEmbed(vid.youtube_url);
             return (
