@@ -209,19 +209,19 @@ export default function Layout({ children }) {
       ></div>
       <aside className={`mobile-drawer ${drawerOpen ? 'open' : ''}`} aria-label="Menu Seluler">
         <div className="drawer-header">
-          <Link to="/" className="brand">
-            <div className="brand-logos">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <div className="brand-logos" style={{ gap: '6px' }}>
               <img
                 src="/assets/images/logo-ulm.png"
                 alt="Logo ULM"
                 className="brand-logo"
-                style={{ height: '28px' }}
+                style={{ height: '30px' }}
               />
               <img
                 src="/assets/images/logo-pgsd.png"
                 alt="Logo PGSD"
                 className="brand-logo"
-                style={{ height: '28px' }}
+                style={{ height: '30px' }}
               />
               <img
                 src="/assets/images/logo-diktisaintek.png"
@@ -230,17 +230,38 @@ export default function Layout({ children }) {
                 style={{ height: '22px' }}
               />
             </div>
-            <span className="brand-title" style={{ fontSize: '0.98rem', color: '#ffffff' }}>
-              Matematika Kelas 3
-            </span>
-          </Link>
-          <button
-            className="icon-btn"
-            onClick={() => setDrawerOpen(false)}
-            aria-label="Tutup Menu"
+            <button
+              className="icon-btn"
+              onClick={() => setDrawerOpen(false)}
+              aria-label="Tutup Menu"
+              style={{
+                color: '#ffffff',
+                width: '36px',
+                height: '36px',
+                fontSize: '1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.1)'
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          <div
+            style={{
+              fontSize: '0.98rem',
+              fontWeight: 800,
+              color: '#ffffff',
+              letterSpacing: '0.3px',
+              paddingTop: '6px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.12)',
+              width: '100%'
+            }}
           >
-            ✕
-          </button>
+            Matematika Kelas 3
+          </div>
         </div>
         <ul className="drawer-list">
           <li>

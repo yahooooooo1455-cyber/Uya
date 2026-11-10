@@ -33,15 +33,33 @@
     <script>
       (function () {
         try {
-          localStorage.setItem(
-            'nl-hud:public:v1',
-            JSON.stringify({ hidden: true, dismissed: true, minimized: true })
-          );
+          localStorage.setItem('nl-hud:public:v1', 'hidden');
+          localStorage.setItem('nl-hud:owner-private:v1', 'hidden');
         } catch (e) {}
 
-        function purgeBadge() {
+        // Cegah pembuatan iframe Netlify / Vercel widget
+        const origCreate = document.createElement.bind(document);
+        document.createElement = function (tag, opts) {
+          const el = origCreate(tag, opts);
+          if (tag && tag.toLowerCase() === 'iframe') {
+            const origSet = el.setAttribute.bind(el);
+            el.setAttribute = function (name, val) {
+              if (
+                (name === 'id' && (val === 'nl-badge-frame' || val === 'nl-hud-frame')) ||
+                (name === 'title' && val && val.indexOf('Netlify') !== -1)
+              ) {
+                el.style.cssText =
+                  'display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;position:absolute!important;left:-9999px!important;width:0!important;height:0!important;';
+              }
+              return origSet(name, val);
+            };
+          }
+          return el;
+        };
+
+        function cleanWidgets() {
           const els = document.querySelectorAll(
-            '#nl-badge-frame, iframe#nl-badge-frame, iframe[title*="Netlify"], iframe#netlify-drawer, netlify-drawer, [data-netlify-badge], vercel-live-feedback, #vercel-live-feedback, .__vercel-toolbar'
+            'iframe#nl-badge-frame, iframe#nl-hud-frame, iframe[title*="Netlify"], vercel-live-feedback, #vercel-live-feedback, .__vercel-toolbar, script[src*="netlify/scripts/hud"]'
           );
           els.forEach(function (el) {
             el.remove();
@@ -49,19 +67,20 @@
         }
 
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', purgeBadge);
+          document.addEventListener('DOMContentLoaded', cleanWidgets);
         } else {
-          purgeBadge();
+          cleanWidgets();
         }
 
-        const observer = new MutationObserver(function () {
-          purgeBadge();
-        });
+        const observer = new MutationObserver(cleanWidgets);
         observer.observe(document.documentElement, { childList: true, subtree: true });
       })();
     </script>
   </head>
   <body>
+    <!-- Trap agar script Netlify otomatis batal jalan (early return) -->
+    <div id="nl-badge-frame" style="display:none!important;visibility:hidden!important;position:absolute!important;left:-9999px!important;width:0!important;height:0!important;pointer-events:none!important;opacity:0!important;"></div>
+    <div id="nl-hud-frame" style="display:none!important;visibility:hidden!important;position:absolute!important;left:-9999px!important;width:0!important;height:0!important;pointer-events:none!important;opacity:0!important;"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

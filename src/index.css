@@ -289,7 +289,7 @@ vercel-live-feedback,
   top: 0;
   left: 0;
   bottom: 0;
-  width: 270px;
+  width: 285px;
   max-width: 85vw;
   background: #212121;
   color: #ffffff;
@@ -298,7 +298,7 @@ vercel-live-feedback,
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-md);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
 }
 
 .mobile-drawer.open {
@@ -306,11 +306,11 @@ vercel-live-feedback,
 }
 
 .drawer-header {
-  padding: 18px 20px;
+  padding: 16px 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .drawer-header .brand-title {
@@ -1405,40 +1405,51 @@ vercel-live-feedback,
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
   .nav-container {
-    padding: 0 10px;
-    min-height: 56px;
-    gap: 6px;
+    padding: 0 12px;
+    min-height: 58px;
+    gap: 8px;
   }
   .nav-left-group {
-    gap: 6px;
+    gap: 8px;
     min-width: 0;
     flex: 1;
+  }
+  .mobile-toggle {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    flex-shrink: 0;
+    z-index: 50;
+    position: relative;
+    background: transparent;
+    border-radius: 8px;
+  }
+  .mobile-toggle:active {
+    background: var(--primary-light);
   }
   .brand {
     gap: 6px;
     min-width: 0;
-    overflow: hidden;
   }
   .brand-logos {
-    gap: 4px;
+    gap: 6px;
     flex-shrink: 0;
   }
   .brand-logo {
-    height: 26px;
+    height: 28px;
   }
   .brand-logo-wide {
-    height: 20px;
+    height: 22px;
   }
   .brand-title {
-    font-size: 0.82rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 135px;
+    display: none;
   }
   .nav-switch-btn {
-    padding: 6px 10px;
-    font-size: 0.78rem;
+    padding: 6px 12px;
+    font-size: 0.8rem;
     white-space: nowrap;
   }
   .icon-btn {
