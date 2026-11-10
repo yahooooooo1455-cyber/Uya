@@ -42,7 +42,7 @@ body,
   line-height: 1.6;
 }
 
-/* ==================== SEMBUNYIKAN BADGE / DRAWER NETLIFY ==================== */
+/* ==================== SEMBUNYIKAN BADGE / DRAWER NETLIFY & VERCEL TOOLBAR ==================== */
 #nl-badge-frame,
 iframe#nl-badge-frame,
 iframe[title*="Netlify"],
@@ -51,7 +51,11 @@ iframe[title*="Powered by Netlify"],
 .netlify-badge,
 [data-netlify-badge],
 iframe#netlify-drawer,
-netlify-drawer {
+netlify-drawer,
+vercel-live-feedback,
+#vercel-live-feedback,
+.__vercel-toolbar,
+[data-vercel-toolbar] {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
@@ -259,6 +263,9 @@ netlify-drawer {
 
 .mobile-toggle {
   display: none;
+  position: relative;
+  z-index: 20;
+  cursor: pointer;
 }
 
 /* ==================== MOBILE DRAWER (GOOGLE SITES DARK DRAWER) ==================== */

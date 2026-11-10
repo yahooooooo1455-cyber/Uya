@@ -14,7 +14,11 @@
       .netlify-badge,
       [data-netlify-badge],
       iframe#netlify-drawer,
-      netlify-drawer {
+      netlify-drawer,
+      vercel-live-feedback,
+      #vercel-live-feedback,
+      .__vercel-toolbar,
+      [data-vercel-toolbar] {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
@@ -37,7 +41,7 @@
 
         function purgeBadge() {
           const els = document.querySelectorAll(
-            '#nl-badge-frame, iframe#nl-badge-frame, iframe[title*="Netlify"], iframe#netlify-drawer, netlify-drawer, [data-netlify-badge]'
+            '#nl-badge-frame, iframe#nl-badge-frame, iframe[title*="Netlify"], iframe#netlify-drawer, netlify-drawer, [data-netlify-badge], vercel-live-feedback, #vercel-live-feedback, .__vercel-toolbar'
           );
           els.forEach(function (el) {
             el.remove();
